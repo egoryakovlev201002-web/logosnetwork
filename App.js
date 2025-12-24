@@ -4,11 +4,11 @@ import { NavigationContainer, useNavigationContainerRef } from '@react-navigatio
 import * as React from 'react';
 import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import haydockImage from 'assets\haydock.jpg';
-import JOHN from 'assets\JOHN.json';
-import LUKE from 'assets\LUKE.json';
-import MARK from 'assets\MARK.json';
-import MATTHEW from 'assets\MATTHEW.json';
+import haydockImage from './assets/haydock.jpg';
+import JOHN from './assets/JOHN.json';
+import LUKE from './assets/LUKE.json';
+import MARK from './assets/MARK.json';
+import MATTHEW from './assets/MATTHEW.json';
 
 
 const ThemeContext = React.createContext();
