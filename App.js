@@ -1,4 +1,5 @@
-
+import { useRef } from 'react';  
+import VisNetwork from 'react-native-vis-network';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import * as React from 'react';
@@ -72,28 +73,99 @@ function ReaderScreen({ route }) {
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
+  const visRef = useRef(null);
+
+  // Generate graph data dynamically from JSONs
+  const gospels = ['MATTHEW', 'MARK', 'LUKE', 'JOHN'];
+  const booksData = { MATTHEW, MARK, LUKE, JOHN };  // Reference imported JSONs
+
+  const gospelNodes = gospels.map((gospel) => ({
+    id: gospel,
+    label: gospel,
+    level: 0,  // Top level for Gospels
+    color: { background: colors.background, border: colors.text },
+    font: { color: colors.text },
+    shape: 'box',  // Rectangular for main nodes
+  }));
+
+  const chapterNodes = [];
+  const edges = [];
+
+  gospels.forEach((gospel, gIndex) => {
+    const book = booksData[gospel];
+    const numChapters = Object.keys(book).length;
+
+    for (let ch = 1; ch <= numChapters; ch++) {
+      const nodeId = `${gospel}_${ch}`;
+      chapterNodes.push({
+        id: nodeId,
+        label: `Ch ${ch}`,
+        level: 1,  // Second level for chapters
+        color: { background: colors.background, border: colors.text },
+        font: { color: colors.text },
+        shape: 'ellipse',  // Circular for chapters
+      });
+      edges.push({ from: gospel, to: nodeId });
+    }
+
+    // Connect Gospels in sequence: Matthew -> Mark -> Luke -> John
+    if (gIndex < gospels.length - 1) {
+      edges.push({ from: gospel, to: gospels[gIndex + 1], arrows: 'to' });
+    }
+  });
+
+  const data = {
+    nodes: [...gospelNodes, ...chapterNodes],
+    edges,
+  };
+
+  // Graph options for Obsidian-like hierarchical layout
+  const options = {
+    layout: {
+      hierarchical: {
+        direction: 'UD',  // Up-Down: Gospels on top, chapters below
+        sortMethod: 'directed',  // Follow edge directions for ordering
+        nodeSpacing: 100,
+        levelSeparation: 150,
+      },
+    },
+    physics: false,  // Disable physics for stable hierarchical view (enable if you want interactive dragging)
+    edges: {
+      color: colors.text + '88',  // Semi-transparent edges matching theme
+      smooth: false,  // Straight edges for simplicity
+    },
+    nodes: {
+      borderWidth: 1,
+      size: 25,
+    },
+    interaction: {
+      zoomView: true,
+      dragView: true,
+      dragNodes: true,
+    },
+    height: '100%',  // Full height
+    width: '100%',
+  };
+
+  // Handle node clicks to navigate to Reader
+  React.useEffect(() => {
+    if (visRef.current && visRef.current.network) {
+      visRef.current.network.on('click', (params) => {
+        if (params.nodes.length > 0) {
+          const nodeId = params.nodes[0];
+          if (nodeId.includes('_')) {  // Chapter nodes have '_' (e.g., 'MATTHEW_5')
+            const [book, chapter] = nodeId.split('_');
+            navigation.navigate('Reader', { book, chapter });
+          }
+          // Optional: Handle Gospel clicks if needed (e.g., navigate to chapter 1)
+        }
+      });
+    }
+  }, [visRef.current]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
-      <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40 }}>
-        This will display your network graph image later.
-      </Text>
-      <Text
-        style={{
-          marginTop: 40,
-          fontSize: 20,
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          backgroundColor: colors.background,
-          color: colors.text,
-          borderRadius: 20,
-          textAlign: 'center',
-          alignSelf: 'center'
-        }}
-        onPress={() => navigation.navigate('Reader', { book: 'MARK', chapter: '1' })}
-      >
-        Test: Open MARK 16
-      </Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingBottom: insets.bottom }}>
+      <VisNetwork ref={visRef} data={data} options={options} style={{ flex: 1 }} />
     </SafeAreaView>
   );
 }
