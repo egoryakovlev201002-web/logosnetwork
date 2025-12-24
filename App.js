@@ -1,4 +1,4 @@
-import { useRef } from 'react';  
+import { useRef } from 'react'; 
 import VisNetwork from 'react-native-vis-network';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
@@ -74,26 +74,25 @@ function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
-  // Create nodes
-  const nodes = [];
-  const edges = [];
-
   const bookOrder = ['MATTHEW', 'MARK', 'LUKE', 'JOHN'];
   const BOOK_LABELS = { MATTHEW: 'Matthew', MARK: 'Mark', LUKE: 'Luke', JOHN: 'John' };
 
-  // Index nodes (main nodes for each book)
+  const nodes = [];
+  const edges = [];
+
   bookOrder.forEach((bookKey, index) => {
+    // Main book node (index node, unclickable)
     nodes.push({
       id: bookKey,
       label: BOOK_LABELS[bookKey],
       color: { background: colors.background, border: colors.text, highlight: colors.text },
       shape: 'box',
-      font: { color: colors.text, size: 16, face: 'Arial', bold: true },
-      physics: false, // index nodes stay static
+      font: { color: colors.text, size: 16, bold: true },
+      physics: false,
     });
 
     // Chapter nodes
-    const chapters = Object.keys(BOOKS[bookKey]); // assuming chapter keys are strings '1', '2', ...
+    const chapters = Object.keys(BOOKS[bookKey]);
     chapters.forEach(chapter => {
       const chapterNodeId = `${bookKey}_${chapter}`;
       nodes.push({
@@ -107,15 +106,14 @@ function GraphScreen({ navigation }) {
       edges.push({ from: bookKey, to: chapterNodeId });
     });
 
-    // Connect index nodes chronologically
+    // Chronological links between main book nodes
     if (index > 0) {
       edges.push({ from: bookOrder[index - 1], to: bookKey, dashes: true });
     }
   });
 
-  // Graph options
   const options = {
-    nodes: { borderWidth: 2, shape: 'box', scaling: { label: true } },
+    nodes: { borderWidth: 2, scaling: { label: true } },
     edges: { color: { color: colors.text }, arrows: { to: { enabled: false } }, smooth: true },
     layout: { hierarchical: false },
     physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
@@ -126,11 +124,10 @@ function GraphScreen({ navigation }) {
 
   const events = {
     select: function (event) {
-      const { nodes } = event;
-      if (nodes.length === 1) {
-        const nodeId = nodes[0];
+      const selectedNodes = event.nodes;
+      if (selectedNodes.length === 1) {
+        const nodeId = selectedNodes[0];
         if (nodeId.includes('_')) {
-          // nodeId format: BOOK_CHAPTER
           const [book, chapter] = nodeId.split('_');
           navigation.navigate('Reader', { book, chapter });
         }
@@ -139,7 +136,15 @@ function GraphScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: colors.background,
+        paddingTop: 12,
+        paddingHorizontal: 16,
+        paddingBottom: insets.bottom + 20,
+      }}
+    >
       <VisNetwork
         nodes={nodes}
         edges={edges}
