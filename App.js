@@ -16,45 +16,6 @@ const ThemeContext = React.createContext();
 const BOOKS = { JOHN, MARK, LUKE, MATTHEW };
 const Tab = createBottomTabNavigator();
 
-function buildGraphData() {
-  const gospelOrder = ['JOHN', 'MARK', 'LUKE', 'MATTHEW'];
-  const nodes = [];
-  const edges = [];
-
-  gospelOrder.forEach((book, i) => {
-    nodes.push({
-      id: book,
-      label: book,
-      shape: 'box',
-      color: '#004aad',
-      font: { color: '#fff' },
-      clickable: false,
-    });
-
-    const chapters = Object.keys(BOOKS[book] || {}); // <- safe fallback
-    chapters.forEach(chapter => {
-      const nodeId = `${book}_${chapter}`;
-      nodes.push({
-        id: nodeId,
-        label: chapter,
-        shape: 'ellipse',
-        color: '#9bbcff',
-        font: { color: '#000' },
-        book,
-        chapter
-      });
-      edges.push({ from: book, to: nodeId });
-    });
-
-    if (i < gospelOrder.length - 1) {
-      edges.push({ from: book, to: gospelOrder[i + 1] });
-    }
-  });
-
-  return { nodes, edges };
-}
-
-
 function CustomHeader({ title, colors }) {
   const insets = useSafeAreaInsets();
   return (
@@ -112,56 +73,31 @@ function ReaderScreen({ route }) {
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
-  const networkRef = useRef(null);
-
-  const graphData = buildGraphData() || { nodes: [], edges: [] };
-  const { nodes, edges } = graphData;
-
-  const options = {
-    nodes: {
-      shape: 'dot',
-      size: 16,
-      font: { size: 16 },
-    },
-    edges: {
-      smooth: true,
-      arrows: { to: { enabled: true } },
-    },
-    layout: {
-      hierarchical: false,
-    },
-    physics: {
-      stabilization: false,
-    },
-  };
-
-  const handleClick = params => {
-    if (params.nodes.length) {
-      const clickedId = params.nodes[0];
-      const clickedNode = nodes.find(n => n.id === clickedId);
-      if (clickedNode?.book && clickedNode?.chapter) {
-        navigation.navigate('Reader', {
-          book: clickedNode.book,
-          chapter: clickedNode.chapter
-        });
-      }
-    }
-  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
-      <VisNetwork
-        ref={networkRef}
-        nodes={nodes}
-        edges={edges}
-        options={options}
-        events={{ select: handleClick }}
-        style={{ flex: 1 }}
-      />
+      <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40 }}>
+        This will display your network graph image later.
+      </Text>
+      <Text
+        style={{
+          marginTop: 40,
+          fontSize: 20,
+          paddingVertical: 12,
+          paddingHorizontal: 30,
+          backgroundColor: colors.background,
+          color: colors.text,
+          borderRadius: 20,
+          textAlign: 'center',
+          alignSelf: 'center'
+        }}
+        onPress={() => navigation.navigate('Reader', { book: 'MARK', chapter: '1' })}
+      >
+        Test: Open MARK 16
+      </Text>
     </SafeAreaView>
   );
 }
-
 
 function SettingsScreen() {
   const { darkMode, toggleDarkMode, colors } = React.useContext(ThemeContext);
