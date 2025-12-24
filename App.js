@@ -74,30 +74,83 @@ function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
+  // Create nodes
+  const nodes = [];
+  const edges = [];
+
+  const bookOrder = ['MATTHEW', 'MARK', 'LUKE', 'JOHN'];
+  const BOOK_LABELS = { MATTHEW: 'Matthew', MARK: 'Mark', LUKE: 'Luke', JOHN: 'John' };
+
+  // Index nodes (main nodes for each book)
+  bookOrder.forEach((bookKey, index) => {
+    nodes.push({
+      id: bookKey,
+      label: BOOK_LABELS[bookKey],
+      color: { background: colors.background, border: colors.text, highlight: colors.text },
+      shape: 'box',
+      font: { color: colors.text, size: 16, face: 'Arial', bold: true },
+      physics: false, // index nodes stay static
+    });
+
+    // Chapter nodes
+    const chapters = Object.keys(BOOKS[bookKey]); // assuming chapter keys are strings '1', '2', ...
+    chapters.forEach(chapter => {
+      const chapterNodeId = `${bookKey}_${chapter}`;
+      nodes.push({
+        id: chapterNodeId,
+        label: `Ch ${chapter}`,
+        color: { background: colors.background, border: colors.text, highlight: colors.text },
+        font: { color: colors.text, size: 14 },
+        shape: 'ellipse',
+      });
+
+      edges.push({ from: bookKey, to: chapterNodeId });
+    });
+
+    // Connect index nodes chronologically
+    if (index > 0) {
+      edges.push({ from: bookOrder[index - 1], to: bookKey, dashes: true });
+    }
+  });
+
+  // Graph options
+  const options = {
+    nodes: { borderWidth: 2, shape: 'box', scaling: { label: true } },
+    edges: { color: { color: colors.text }, arrows: { to: { enabled: false } }, smooth: true },
+    layout: { hierarchical: false },
+    physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
+    interaction: { hover: true, navigationButtons: true, multiselect: false },
+    height: '100%',
+    width: '100%',
+  };
+
+  const events = {
+    select: function (event) {
+      const { nodes } = event;
+      if (nodes.length === 1) {
+        const nodeId = nodes[0];
+        if (nodeId.includes('_')) {
+          // nodeId format: BOOK_CHAPTER
+          const [book, chapter] = nodeId.split('_');
+          navigation.navigate('Reader', { book, chapter });
+        }
+      }
+    },
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
-      <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40 }}>
-        This will display your network graph image later.
-      </Text>
-      <Text
-        style={{
-          marginTop: 40,
-          fontSize: 20,
-          paddingVertical: 12,
-          paddingHorizontal: 30,
-          backgroundColor: colors.background,
-          color: colors.text,
-          borderRadius: 20,
-          textAlign: 'center',
-          alignSelf: 'center'
-        }}
-        onPress={() => navigation.navigate('Reader', { book: 'MARK', chapter: '1' })}
-      >
-        Test: Open MARK 16
-      </Text>
+      <VisNetwork
+        nodes={nodes}
+        edges={edges}
+        options={options}
+        events={events}
+        style={{ flex: 1 }}
+      />
     </SafeAreaView>
   );
 }
+
 
 function SettingsScreen() {
   const { darkMode, toggleDarkMode, colors } = React.useContext(ThemeContext);
