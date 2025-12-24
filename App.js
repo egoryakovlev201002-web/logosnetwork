@@ -16,6 +16,45 @@ const ThemeContext = React.createContext();
 const BOOKS = { JOHN, MARK, LUKE, MATTHEW };
 const Tab = createBottomTabNavigator();
 
+function buildGraphData() {
+  const gospelOrder = ['JOHN', 'MARK', 'LUKE', 'MATTHEW'];
+  const nodes = [];
+  const edges = [];
+
+  gospelOrder.forEach((book, i) => {
+    nodes.push({
+      id: book,
+      label: book,
+      shape: 'box',
+      color: '#004aad',
+      font: { color: '#fff' },
+      clickable: false,
+    });
+
+    const chapters = Object.keys(BOOKS[book] || {}); // <- safe fallback
+    chapters.forEach(chapter => {
+      const nodeId = `${book}_${chapter}`;
+      nodes.push({
+        id: nodeId,
+        label: chapter,
+        shape: 'ellipse',
+        color: '#9bbcff',
+        font: { color: '#000' },
+        book,
+        chapter
+      });
+      edges.push({ from: book, to: nodeId });
+    });
+
+    if (i < gospelOrder.length - 1) {
+      edges.push({ from: book, to: gospelOrder[i + 1] });
+    }
+  });
+
+  return { nodes, edges };
+}
+
+
 function CustomHeader({ title, colors }) {
   const insets = useSafeAreaInsets();
   return (
@@ -73,102 +112,56 @@ function ReaderScreen({ route }) {
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
-  const visRef = useRef(null);
+  const networkRef = useRef(null);
 
-  // Generate graph data dynamically from JSONs
-  const gospels = ['MATTHEW', 'MARK', 'LUKE', 'JOHN'];
-  const booksData = { MATTHEW, MARK, LUKE, JOHN };  // Reference imported JSONs
+  const graphData = buildGraphData() || { nodes: [], edges: [] };
+  const { nodes, edges } = graphData;
 
-  const gospelNodes = gospels.map((gospel) => ({
-    id: gospel,
-    label: gospel,
-    level: 0,  // Top level for Gospels
-    color: { background: colors.background, border: colors.text },
-    font: { color: colors.text },
-    shape: 'box',  // Rectangular for main nodes
-  }));
-
-  const chapterNodes = [];
-  const edges = [];
-
-  gospels.forEach((gospel, gIndex) => {
-    const book = booksData[gospel];
-    const numChapters = Object.keys(book).length;
-
-    for (let ch = 1; ch <= numChapters; ch++) {
-      const nodeId = `${gospel}_${ch}`;
-      chapterNodes.push({
-        id: nodeId,
-        label: `Ch ${ch}`,
-        level: 1,  // Second level for chapters
-        color: { background: colors.background, border: colors.text },
-        font: { color: colors.text },
-        shape: 'ellipse',  // Circular for chapters
-      });
-      edges.push({ from: gospel, to: nodeId });
-    }
-
-    // Connect Gospels in sequence: Matthew -> Mark -> Luke -> John
-    if (gIndex < gospels.length - 1) {
-      edges.push({ from: gospel, to: gospels[gIndex + 1], arrows: 'to' });
-    }
-  });
-
-  const data = {
-    nodes: [...gospelNodes, ...chapterNodes],
-    edges,
-  };
-
-  // Graph options for Obsidian-like hierarchical layout
   const options = {
-    layout: {
-      hierarchical: {
-        direction: 'UD',  // Up-Down: Gospels on top, chapters below
-        sortMethod: 'directed',  // Follow edge directions for ordering
-        nodeSpacing: 100,
-        levelSeparation: 150,
-      },
-    },
-    physics: false,  // Disable physics for stable hierarchical view (enable if you want interactive dragging)
-    edges: {
-      color: colors.text + '88',  // Semi-transparent edges matching theme
-      smooth: false,  // Straight edges for simplicity
-    },
     nodes: {
-      borderWidth: 1,
-      size: 25,
+      shape: 'dot',
+      size: 16,
+      font: { size: 16 },
     },
-    interaction: {
-      zoomView: true,
-      dragView: true,
-      dragNodes: true,
+    edges: {
+      smooth: true,
+      arrows: { to: { enabled: true } },
     },
-    height: '100%',  // Full height
-    width: '100%',
+    layout: {
+      hierarchical: false,
+    },
+    physics: {
+      stabilization: false,
+    },
   };
 
-  // Handle node clicks to navigate to Reader
-  React.useEffect(() => {
-    if (visRef.current && visRef.current.network) {
-      visRef.current.network.on('click', (params) => {
-        if (params.nodes.length > 0) {
-          const nodeId = params.nodes[0];
-          if (nodeId.includes('_')) {  // Chapter nodes have '_' (e.g., 'MATTHEW_5')
-            const [book, chapter] = nodeId.split('_');
-            navigation.navigate('Reader', { book, chapter });
-          }
-          // Optional: Handle Gospel clicks if needed (e.g., navigate to chapter 1)
-        }
-      });
+  const handleClick = params => {
+    if (params.nodes.length) {
+      const clickedId = params.nodes[0];
+      const clickedNode = nodes.find(n => n.id === clickedId);
+      if (clickedNode?.book && clickedNode?.chapter) {
+        navigation.navigate('Reader', {
+          book: clickedNode.book,
+          chapter: clickedNode.chapter
+        });
+      }
     }
-  }, [visRef.current]);
+  };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingBottom: insets.bottom }}>
-      <VisNetwork ref={visRef} data={data} options={options} style={{ flex: 1 }} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingHorizontal: 16, paddingBottom: insets.bottom + 20 }}>
+      <VisNetwork
+        ref={networkRef}
+        nodes={nodes}
+        edges={edges}
+        options={options}
+        events={{ select: handleClick }}
+        style={{ flex: 1 }}
+      />
     </SafeAreaView>
   );
 }
+
 
 function SettingsScreen() {
   const { darkMode, toggleDarkMode, colors } = React.useContext(ThemeContext);
