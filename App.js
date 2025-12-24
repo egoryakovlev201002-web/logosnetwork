@@ -1,16 +1,14 @@
-import { useRef } from 'react'; 
-import VisNetwork from 'react-native-vis-network';
+import React, { useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
-import * as React from 'react';
 import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
 import JOHN from './assets/JOHN.json';
 import LUKE from './assets/LUKE.json';
 import MARK from './assets/MARK.json';
 import MATTHEW from './assets/MATTHEW.json';
-
 
 const ThemeContext = React.createContext();
 const BOOKS = { JOHN, MARK, LUKE, MATTHEW };
@@ -72,90 +70,77 @@ function ReaderScreen({ route }) {
 
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
-  const insets = useSafeAreaInsets();
 
-  const bookOrder = ['MATTHEW', 'MARK', 'LUKE', 'JOHN'];
-  const BOOK_LABELS = { MATTHEW: 'Matthew', MARK: 'Mark', LUKE: 'Luke', JOHN: 'John' };
+  const nodes = [
+    { id: 'JOHN', label: 'John', color: '#ff9999' },
+    { id: 'MARK', label: 'Mark', color: '#99ff99' },
+    { id: 'LUKE', label: 'Luke', color: '#9999ff' },
+    { id: 'MATTHEW', label: 'Matthew', color: '#ffff99' },
+    ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+      Object.keys(chapters).map(ch => ({ id: `${book}-${ch}`, label: ch }))
+    )
+  ];
 
-  const nodes = [];
-  const edges = [];
+  const edges = [
+    { from: 'MATTHEW', to: 'MARK' },
+    { from: 'MARK', to: 'LUKE' },
+    { from: 'LUKE', to: 'JOHN' },
+    ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+      Object.keys(chapters).map(ch => ({ from: book, to: `${book}-${ch}` }))
+    )
+  ];
 
-  bookOrder.forEach((bookKey, index) => {
-    // Main book node (index node, unclickable)
-    nodes.push({
-      id: bookKey,
-      label: BOOK_LABELS[bookKey],
-      color: { background: colors.background, border: colors.text, highlight: colors.text },
-      shape: 'box',
-      font: { color: colors.text, size: 16, bold: true },
-      physics: false,
-    });
+  const html = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      html, body { margin:0; height:100%; }
+      #network { width:100%; height:100%; background: ${colors.background}; }
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  </head>
+  <body>
+    <div id="network"></div>
+    <script type="text/javascript">
+      const nodes = new vis.DataSet(${JSON.stringify(nodes)});
+      const edges = new vis.DataSet(${JSON.stringify(edges)});
+      const container = document.getElementById('network');
+      const data = { nodes, edges };
+      const options = { 
+        nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' } },
+        edges: { color: '#888', smooth: true },
+        layout: { hierarchical: false },
+        interaction: { hover: true }
+      };
+      const network = new vis.Network(container, data, options);
 
-    // Chapter nodes
-    const chapters = Object.keys(BOOKS[bookKey]);
-    chapters.forEach(chapter => {
-      const chapterNodeId = `${bookKey}_${chapter}`;
-      nodes.push({
-        id: chapterNodeId,
-        label: `Ch ${chapter}`,
-        color: { background: colors.background, border: colors.text, highlight: colors.text },
-        font: { color: colors.text, size: 14 },
-        shape: 'ellipse',
-      });
-
-      edges.push({ from: bookKey, to: chapterNodeId });
-    });
-
-    // Chronological links between main book nodes
-    if (index > 0) {
-      edges.push({ from: bookOrder[index - 1], to: bookKey, dashes: true });
-    }
-  });
-
-  const options = {
-    nodes: { borderWidth: 2, scaling: { label: true } },
-    edges: { color: { color: colors.text }, arrows: { to: { enabled: false } }, smooth: true },
-    layout: { hierarchical: false },
-    physics: { stabilization: false, barnesHut: { gravitationalConstant: -3000 } },
-    interaction: { hover: true, navigationButtons: true, multiselect: false },
-    height: '100%',
-    width: '100%',
-  };
-
-  const events = {
-    select: function (event) {
-      const selectedNodes = event.nodes;
-      if (selectedNodes.length === 1) {
-        const nodeId = selectedNodes[0];
-        if (nodeId.includes('_')) {
-          const [book, chapter] = nodeId.split('_');
-          navigation.navigate('Reader', { book, chapter });
+      network.on('click', function(params) {
+        const node = params.nodes[0];
+        if (node && node.includes('-')) {
+          window.ReactNativeWebView.postMessage(node);
         }
-      }
-    },
+      });
+    </script>
+  </body>
+  </html>
+`;
+
+
+  const handleMessage = (event) => {
+    const [book, chapter] = event.nativeEvent.data.split('-');
+    navigation.navigate('Reader', { book, chapter });
   };
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.background,
-        paddingTop: 12,
-        paddingHorizontal: 16,
-        paddingBottom: insets.bottom + 20,
-      }}
-    >
-      <VisNetwork
-        nodes={nodes}
-        edges={edges}
-        options={options}
-        events={events}
-        style={{ flex: 1 }}
-      />
-    </SafeAreaView>
+    <WebView
+      originWhitelist={['*']}
+      source={{ html }}
+      style={{ flex: 1 }}
+      onMessage={handleMessage}
+    />
   );
 }
-
 
 function SettingsScreen() {
   const { darkMode, toggleDarkMode, colors } = React.useContext(ThemeContext);
@@ -184,9 +169,9 @@ function SettingsScreen() {
 }
 
 function SplashScreen({ onFinish }) {
-  const fadeCross = React.useRef(new Animated.Value(0)).current;
-  const fadeWelcome = React.useRef(new Animated.Value(0)).current;
-  const fadeButton = React.useRef(new Animated.Value(0)).current;
+  const fadeCross = useRef(new Animated.Value(0)).current;
+  const fadeWelcome = useRef(new Animated.Value(0)).current;
+  const fadeButton = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
@@ -315,4 +300,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
