@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
-import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View } from 'react-native';
+import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
@@ -9,6 +9,9 @@ import JOHN from './assets/JOHN.json';
 import LUKE from './assets/LUKE.json';
 import MARK from './assets/MARK.json';
 import MATTHEW from './assets/MATTHEW.json';
+import readerBg from './assets/tab-bg/reader.jpg';
+import graphBg from './assets/tab-bg/graph.png';
+import settingsBg from './assets/tab-bg/settings.png';
 
 const ThemeContext = React.createContext();
 const BOOKS = { JOHN, MARK, LUKE, MATTHEW };
@@ -53,11 +56,11 @@ function ReaderScreen({ route }) {
           </Text>
         ) : (
           <>
-            <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 10 }}>
+            <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 0 }}>
               {book} {chapter}
             </Text>
             {chapterData.map((line, index) => (
-              <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 8 }}>
+              <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 0 }}>
                 {index + 1}. {line}
               </Text>
             ))}
@@ -233,6 +236,45 @@ function SplashScreen({ onFinish }) {
   );
 }
 
+function TabButton({ label, background, focused, colors }) {
+  return (
+    <ImageBackground
+      source={background}
+      resizeMode="cover"
+      style={{
+        width: 70,
+        height: 34,
+        borderRadius: 8,
+        overflow: 'hidden',
+        borderWidth: focused ? 2 : 1,
+        borderColor: focused ? colors.text : colors.text + '55',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <View
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          backgroundColor: focused
+            ? 'rgba(0,0,0,0.25)'
+            : 'rgba(0,0,0,0.45)',
+        }}
+      />
+      <Text
+        style={{
+          fontSize: 12,
+          fontWeight: '600',
+          color: '#ffffff',
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+        }}
+      >
+        {label}
+      </Text>
+    </ImageBackground>
+  );
+}
+
 // --- Dynamic Tab Navigator ---
 function AppTabs() {
   const insets = useSafeAreaInsets();
@@ -252,9 +294,53 @@ function AppTabs() {
         tabBarShowLabel: true,
       }}
     >
-      <Tab.Screen name="Reader" component={ReaderScreen} options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>📖</Text> }} />
-      <Tab.Screen name="Graph" component={GraphScreen} options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>🕸️</Text> }} />
-      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarIcon: () => <Text style={{ fontSize: 20 }}>⚙️</Text> }} />
+      <Tab.Screen
+  name="Reader"
+  component={ReaderScreen}
+  options={{
+    tabBarLabel: () => null,
+    tabBarIcon: ({ focused }) => (
+      <TabButton
+        label="Reader"
+        background={readerBg}
+        focused={focused}
+        colors={colors}
+      />
+    ),
+  }}
+/>
+
+<Tab.Screen
+  name="Graph"
+  component={GraphScreen}
+  options={{
+    tabBarLabel: () => null,
+    tabBarIcon: ({ focused }) => (
+      <TabButton
+        label="Graph"
+        background={graphBg}
+        focused={focused}
+        colors={colors}
+      />
+    ),
+  }}
+/>
+
+<Tab.Screen
+  name="Settings"
+  component={SettingsScreen}
+  options={{
+    tabBarLabel: () => null,
+    tabBarIcon: ({ focused }) => (
+      <TabButton
+        label="Settings"
+        background={settingsBg}
+        focused={focused}
+        colors={colors}
+      />
+    ),
+  }}
+/>
     </Tab.Navigator>
   );
 }
