@@ -6,16 +6,16 @@ import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-
 import { TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
-import JOHN from './assets/JOHN.json';
-import LUKE from './assets/LUKE.json';
-import MARK from './assets/MARK.json';
-import MATTHEW from './assets/MATTHEW.json';
+import John from './assets/JOHN.json';
+import Luke from './assets/LUKE.json';
+import Mark from './assets/MARK.json';
+import Matthew from './assets/MATTHEW.json';
 import readerBg from './assets/tab-bg/reader.jpg';
 import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
 
 const ThemeContext = React.createContext();
-const BOOKS = { JOHN, MARK, LUKE, MATTHEW };
+const BOOKS = { John, Mark, Luke, Matthew };
 const Tab = createBottomTabNavigator();
 
 function CustomHeader({ title, colors }) {
@@ -127,7 +127,7 @@ function ReaderScreen({ route }) {
       }}>
         {!chapterData ? (
           <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40 }}>
-            Please select a passage.
+            Please select a passage via Graph Screen.
           </Text>
         ) : (
           <>
@@ -161,19 +161,19 @@ function GraphScreen({ navigation }) {
   };
 
   const nodes = [
-    { id: 'JOHN', label: 'John', color: '#ff9999' },
-    { id: 'MARK', label: 'Mark', color: '#99ff99' },
-    { id: 'LUKE', label: 'Luke', color: '#9999ff' },
-    { id: 'MATTHEW', label: 'Matthew', color: '#ffff99' },
+    { id: 'John', label: 'John', color: '#ff9999' },
+    { id: 'Mark', label: 'Mark', color: '#99ff99' },
+    { id: 'Luke', label: 'Luke', color: '#9999ff' },
+    { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
     ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
       Object.keys(chapters).map(ch => ({ id: `${book}-${ch}`, label: ch }))
     )
   ];
 
   const edges = [
-    { from: 'MATTHEW', to: 'MARK' },
-    { from: 'MARK', to: 'LUKE' },
-    { from: 'LUKE', to: 'JOHN' },
+    { from: 'Matthew', to: 'Mark' },
+    { from: 'Mark', to: 'Luke' },
+    { from: 'Luke', to: 'John' },
     ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
       Object.keys(chapters).map(ch => ({ from: book, to: `${book}-${ch}` }))
     )
@@ -215,7 +215,7 @@ function GraphScreen({ navigation }) {
       window.graphContainer = document.getElementById('network');
       window.graphData = { nodes: window.graphNodes, edges: window.graphEdges };
       window.graphOptions = { 
-        nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' } },
+        nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' }, font: {color: '${colors.graphText}', size: 14, } },
         edges: { color: '#888', smooth: true },
         layout: { hierarchical: false },
         interaction: { hover: true }
@@ -250,7 +250,7 @@ function GraphScreen({ navigation }) {
     <View style={{ flex: 1 }}>
       <View style={{ padding: 8, backgroundColor: colors.background, zIndex: 2 }}>
         <TextInput
-          placeholder="Search..."
+          placeholder="Search a node..."
           placeholderTextColor={colors.text + '88'}
           value={searchText}
           onChangeText={setSearchText}
@@ -515,8 +515,17 @@ export default function App() {
     darkMode,
     toggleDarkMode: () => setDarkMode(prev => !prev),
     colors: darkMode
-      ? { background: '#03032E', text: '#ffffff' }
-      : { background: '#F5EAD6', text: '#2B1D0E' },
+      ? {
+        background: '#03032E',
+        text: '#ffffff',
+        graphText: '#ffffff',
+      }
+      :{
+        background: '#F5EAD6',
+        text: '#2B1D0E',
+        graphText: '#2B1D0E',
+      },
+
   };
 
   const [currentTitle, setCurrentTitle] = React.useState('Reader');
