@@ -1,8 +1,9 @@
 import React, { useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
-import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
 import JOHN from './assets/JOHN.json';
@@ -148,8 +149,16 @@ function ReaderScreen({ route }) {
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const [searchText, setSearchText] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState([]);
+  const [filteredNodes, setFilteredNodes] = React.useState([]);
   const webViewRef = React.useRef(null);
+
+  const formatNodeLabel = (id) => {
+    if (id.includes('-')) {
+      const [book, chapter] = id.split('-');
+      return `${book} ${chapter}`;
+    }
+    return id;
+  };
 
   const nodes = [
     { id: 'JOHN', label: 'John', color: '#ff9999' },
@@ -170,129 +179,112 @@ function GraphScreen({ navigation }) {
     )
   ];
 
+  React.useEffect(() => {
+    if (!searchText) return setFilteredNodes([]);
+    const lower = searchText.toLowerCase();
+    const partialMatches = nodes.filter(n => formatNodeLabel(n.id).toLowerCase().includes(lower));
+    setFilteredNodes(partialMatches);
+  }, [searchText]);
+
+  const handleSelectNode = (nodeId) => {
+    setSearchText('');
+    setFilteredNodes([]);
+    if (webViewRef.current) {
+      webViewRef.current.injectJavaScript(`
+        if(window.selectNode) { window.selectNode("${nodeId}"); }
+        true;
+      `);
+    }
+  };
+
   const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        html, body { margin:0; height:100%; }
-        #network { width:100%; height:100%; background: ${colors.background}; }
-      </style>
-      <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    </head>
-    <body>
-      <div id="network"></div>
-      <script type="text/javascript">
-        const nodes = new vis.DataSet(${JSON.stringify(nodes)});
-        const edges = new vis.DataSet(${JSON.stringify(edges)});
-        const container = document.getElementById('network');
-        const data = { nodes, edges };
-        const options = { 
-          nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' } },
-          edges: { color: '#888', smooth: true },
-          layout: { hierarchical: false },
-          interaction: { hover: true }
-        };
-        const network = new vis.Network(container, data, options);
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      html, body { margin:0; height:100%; }
+      #network { width:100%; height:100%; background: ${colors.background}; }
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  </head>
+  <body>
+    <div id="network"></div>
+    <script type="text/javascript">
+      window.graphNodes = new vis.DataSet(${JSON.stringify(nodes)});
+      window.graphEdges = new vis.DataSet(${JSON.stringify(edges)});
+      window.graphContainer = document.getElementById('network');
+      window.graphData = { nodes: window.graphNodes, edges: window.graphEdges };
+      window.graphOptions = { 
+        nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' } },
+        edges: { color: '#888', smooth: true },
+        layout: { hierarchical: false },
+        interaction: { hover: true }
+      };
+      window.network = new vis.Network(window.graphContainer, window.graphData, window.graphOptions);
 
-        network.on('click', function(params) {
-          const node = params.nodes[0];
-          if (node && node.includes('-')) {
-            window.ReactNativeWebView.postMessage(node);
-          }
-        });
-
-        // Function called from React Native to highlight + focus a node
-        function highlightNode(nodeId) {
-          network.selectNodes([nodeId]);
-          network.focus(nodeId, { scale: 1.5, animation: true });
+      window.selectNode = function(nodeId) {
+        if(window.network && nodeId) {
+          window.network.unselectAll();
+          window.network.selectNodes([nodeId]);
+          window.network.focus(nodeId, { scale: 1.5, animation: true });
         }
-      </script>
-    </body>
-    </html>
-  `;
+      }
+
+      window.network.on('click', function(params) {
+        const node = params.nodes[0];
+        if (node && node.includes('-')) {
+          window.ReactNativeWebView.postMessage(node);
+        }
+      });
+    </script>
+  </body>
+  </html>
+`;
 
   const handleMessage = (event) => {
     const [book, chapter] = event.nativeEvent.data.split('-');
     navigation.navigate('Reader', { book, chapter });
   };
 
-  const handleSearchChange = (text) => {
-  setSearchText(text);
-
-  if (!text) {
-    setSearchResults([]);
-    return;
-  }
-
-  const lower = text.trim().toLowerCase();
-
-  // Exact match: look for nodes where "Book Chapter" matches input
-  const exact = nodes.find(n => {
-    if (!n.id.includes('-')) return false; // skip book nodes
-    const [bookId, chapter] = n.id.split('-');
-    const bookLabel = nodes.find(b => b.id === bookId)?.label || bookId;
-    return `${bookLabel} ${chapter}`.toLowerCase() === lower;
-  });
-
-  if (exact) {
-    setSearchResults([]);
-    webViewRef.current?.injectJavaScript(`highlightNode('${exact.id}'); true;`);
-  } else {
-    // Partial match: match either book label or chapter number
-    const filtered = nodes.filter(n => {
-      if (!n.id.includes('-')) return n.label.toLowerCase().includes(lower); // book node
-      const [bookId, chapter] = n.id.split('-');
-      const bookLabel = nodes.find(b => b.id === bookId)?.label || bookId;
-      return bookLabel.toLowerCase().includes(lower) || chapter.toLowerCase().includes(lower);
-    });
-    setSearchResults(filtered);
-  }
-};
-
-
-  const handleResultPress = (node) => {
-    setSearchResults([]);
-    setSearchText('');
-    webViewRef.current?.injectJavaScript(`highlightNode('${node.id}'); true;`);
-  };
-
   return (
     <View style={{ flex: 1 }}>
-      {/* Search Input at Top-Right */}
-      <View style={{ position: 'absolute', top: 10, right: 10, zIndex: 10, width: 160 }}>
+      <View style={{ padding: 8, backgroundColor: colors.background, zIndex: 2 }}>
         <TextInput
-          placeholder="Search node..."
+          placeholder="Search..."
           placeholderTextColor={colors.text + '88'}
           value={searchText}
-          onChangeText={handleSearchChange}
+          onChangeText={setSearchText}
           style={{
             backgroundColor: colors.text + '11',
             color: colors.text,
-            paddingHorizontal: 10,
+            paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 8,
-            fontSize: 14
+            fontSize: 16,
           }}
         />
-        {searchResults.length > 0 && (
+        {filteredNodes.length > 0 && (
           <FlatList
+            data={filteredNodes}
+            keyExtractor={(item) => item.id}
             style={{
-              maxHeight: 200,
+              position: 'absolute',
+              top: 42,
+              left: 8,
+              right: 8,
               backgroundColor: colors.background,
-              marginTop: 4,
-              borderRadius: 6,
               borderWidth: 1,
-              borderColor: colors.text + '33'
+              borderColor: colors.text + '33',
+              borderRadius: 6,
+              maxHeight: 200,
+              zIndex: 2,
             }}
-            data={searchResults}
-            keyExtractor={item => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => handleResultPress(item)}
-                style={{ paddingVertical: 6, paddingHorizontal: 10 }}
+                onPress={() => handleSelectNode(item.id)}
+                style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: colors.text + '22' }}
               >
-                <Text style={{ color: colors.text }}>{item.id} {item.label}</Text>
+                <Text style={{ color: colors.text }}>{formatNodeLabel(item.id)}</Text>
               </TouchableOpacity>
             )}
           />
@@ -309,6 +301,8 @@ function GraphScreen({ navigation }) {
     </View>
   );
 }
+
+
 
 
 function SettingsScreen() {
