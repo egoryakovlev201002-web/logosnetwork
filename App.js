@@ -1,9 +1,8 @@
 import React, { useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
-import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet } from 'react-native';
+import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
 import John from './assets/JOHN.json';
@@ -43,7 +42,6 @@ function ReaderScreen({ route }) {
   const [windows, setWindows] = React.useState([]);
   const [activeWindow, setActiveWindow] = React.useState(null);
 
-  // Whenever a new node is clicked from GraphScreen
   React.useEffect(() => {
     if (!route.params?.book || !route.params?.chapter) return;
 
