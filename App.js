@@ -12,9 +12,23 @@ import Matthew from './assets/MATTHEW.json';
 import readerBg from './assets/tab-bg/reader.jpg';
 import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
+import ChrysostomOnMatthew from './assets/ChrysostomOnMatthew.json';
+import ChrysostomOnJohn from './assets/ChrysostomOnJohn.json';
+
 
 const ThemeContext = React.createContext();
 const BOOKS = { John, Mark, Luke, Matthew };
+const COMMENTARIES = [
+  {
+    id: 'Chrysostom',
+    author: 'Chrysostom',
+    color: '#c084fc',
+    books: {
+      Matthew: ChrysostomOnMatthew,
+      John: ChrysostomOnJohn,
+    },
+  },
+];
 const Tab = createBottomTabNavigator();
 
 function CustomHeader({ title, colors }) {
@@ -75,7 +89,20 @@ function ReaderScreen({ route }) {
   };
 
   const activeData = activeWindow ? activeWindow.split('-') : [];
-  const chapterData = activeData.length === 2 ? BOOKS[activeData[0]]?.[activeData[1]] : null;
+  let chapterData = null;
+  let displayTitle = '';
+
+  if (activeData.length === 2) {
+    // Gospel chapter
+    const [book, chapter] = activeData;
+    chapterData = BOOKS[book]?.[chapter];
+    displayTitle = `${book} ${chapter}`;
+  } else if (activeData.length === 3) {
+    // Commentary chapter
+    const [author, book, chapter] = activeData;
+    chapterData = COMMENTARIES.find(c => c.id === author)?.books[book]?.[chapter];
+    displayTitle = `${author} on ${book} ${chapter}`;
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
@@ -130,9 +157,10 @@ function ReaderScreen({ route }) {
         ) : (
           <>
             <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 0 }}>
-              {activeData[0]} {activeData[1]}
+              {displayTitle}
             </Text>
-            {chapterData.map((line, index) => (
+
+            {chapterData?.map((line, index) => (
               <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 0 }}>
                 {index + 1}. {line}
               </Text>
@@ -144,6 +172,7 @@ function ReaderScreen({ route }) {
   );
 }
 
+
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const [searchText, setSearchText] = React.useState('');
@@ -151,31 +180,74 @@ function GraphScreen({ navigation }) {
   const webViewRef = React.useRef(null);
 
   const formatNodeLabel = (id) => {
-    if (id.includes('-')) {
-      const [book, chapter] = id.split('-');
+    const parts = id.split('-');
+
+    if (parts.length === 3) {
+      const [author, book, chapter] = parts;
+      return `${author} on ${book} ${chapter}`;
+    }
+
+    if (parts.length === 2) {
+      const [book, chapter] = parts;
       return `${book} ${chapter}`;
     }
+
     return id;
   };
 
+
   const nodes = [
+    // Gospel index nodes (unchanged colors)
     { id: 'John', label: 'John', color: '#ff9999' },
     { id: 'Mark', label: 'Mark', color: '#99ff99' },
     { id: 'Luke', label: 'Luke', color: '#9999ff' },
     { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
+
+    // Gospel chapter nodes (unchanged)
     ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
-      Object.keys(chapters).map(ch => ({ id: `${book}-${ch}`, label: ch }))
-    )
+      Object.keys(chapters).map(ch => ({
+        id: `${book}-${ch}`,
+        label: `${book} ${ch}`,
+      }))
+    ),
+
+    // Commentary chapter nodes (new, distinct color)
+    ...COMMENTARIES.flatMap(comm =>
+      Object.entries(comm.books).flatMap(([book, chapters]) =>
+        Object.keys(chapters).map(ch => ({
+          id: `${comm.id}-${book}-${ch}`,
+          label: `${comm.author} on ${book} ${ch}`,
+          color: comm.color,
+        }))
+      )
+    ),
   ];
 
+
   const edges = [
+    // Existing Gospel edges (unchanged)
     { from: 'Matthew', to: 'Mark' },
     { from: 'Mark', to: 'Luke' },
     { from: 'Luke', to: 'John' },
+
     ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
-      Object.keys(chapters).map(ch => ({ from: book, to: `${book}-${ch}` }))
-    )
+      Object.keys(chapters).map(ch => ({
+        from: book,
+        to: `${book}-${ch}`,
+      }))
+    ),
+
+    // Commentary links
+    ...COMMENTARIES.flatMap(comm =>
+      Object.entries(comm.books).flatMap(([book, chapters]) =>
+        Object.keys(chapters).map(ch => ({
+          from: `${book}-${ch}`,
+          to: `${comm.id}-${book}-${ch}`,
+        }))
+      )
+    ),
   ];
+
 
   React.useEffect(() => {
     if (!searchText) return setFilteredNodes([]);
@@ -230,19 +302,30 @@ function GraphScreen({ navigation }) {
 
       window.network.on('click', function(params) {
         const node = params.nodes[0];
-        if (node && node.includes('-')) {
+        if (node) {
           window.ReactNativeWebView.postMessage(node);
         }
       });
+
     </script>
   </body>
   </html>
 `;
 
   const handleMessage = (event) => {
-    const [book, chapter] = event.nativeEvent.data.split('-');
-    navigation.navigate('Reader', { book, chapter });
+    const parts = event.nativeEvent.data.split('-');
+
+    if (parts.length === 2) {
+      // Gospel chapter
+      const [book, chapter] = parts;
+      navigation.navigate('Reader', { book, chapter });
+    } else if (parts.length === 3) {
+      // Commentary chapter
+      const [author, book, chapter] = parts;
+      navigation.navigate('Reader', { book: `${author}-${book}`, chapter });
+    }
   };
+
 
   return (
     <View style={{ flex: 1 }}>
