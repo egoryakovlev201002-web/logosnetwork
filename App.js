@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
-import { Animated, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { Image, Animated, Dimensions, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
@@ -14,6 +14,14 @@ import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
 import ChrysostomOnMatthew from './assets/ChrysostomOnMatthew.json';
 import ChrysostomOnJohn from './assets/ChrysostomOnJohn.json';
+import introslide1_background from './assets/introslide1_background.jpg';
+import introslide2_background from './assets/introslide2_background.jpg';
+import introslide2_box1 from './assets/introslide2_box1.jpg';
+import introslide2_box2 from './assets/introslide2_box2.jpg';
+import introslide3_background from './assets/introslide3_background.jpg';
+import ChristTheKing from './assets/ChristTheKing.jpg';
+import TheSacredHeart from './assets/TheSacredHeart.jpg';
+
 
 
 const ThemeContext = React.createContext();
@@ -66,7 +74,6 @@ function ReaderScreen({ route }) {
     };
 
     setWindows(prev => {
-      // Prevent duplicates
       if (prev.find(w => w.id === newWindow.id)) {
         setActiveWindow(newWindow.id);
         return prev;
@@ -93,12 +100,10 @@ function ReaderScreen({ route }) {
   let displayTitle = '';
 
   if (activeData.length === 2) {
-    // Gospel chapter
     const [book, chapter] = activeData;
     chapterData = BOOKS[book]?.[chapter];
     displayTitle = `${book} ${chapter}`;
   } else if (activeData.length === 3) {
-    // Commentary chapter
     const [author, book, chapter] = activeData;
     chapterData = COMMENTARIES.find(c => c.id === author)?.books[book]?.[chapter];
     displayTitle = `${author} on ${book} ${chapter}`;
@@ -106,7 +111,6 @@ function ReaderScreen({ route }) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Window Tabs */}
       {windows.length > 0 && (
         <ScrollView
           horizontal
@@ -143,7 +147,6 @@ function ReaderScreen({ route }) {
         </ScrollView>
       )}
 
-      {/* Chapter Content */}
       <ScrollView contentContainerStyle={{
         paddingTop: 12,
         paddingBottom: insets.bottom + 20,
@@ -197,13 +200,11 @@ function GraphScreen({ navigation }) {
 
 
   const nodes = [
-    // Gospel index nodes (unchanged colors)
     { id: 'John', label: 'John', color: '#ff9999' },
     { id: 'Mark', label: 'Mark', color: '#99ff99' },
     { id: 'Luke', label: 'Luke', color: '#9999ff' },
     { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
 
-    // Gospel chapter nodes (unchanged)
     ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
       Object.keys(chapters).map(ch => ({
         id: `${book}-${ch}`,
@@ -211,7 +212,6 @@ function GraphScreen({ navigation }) {
       }))
     ),
 
-    // Commentary chapter nodes (new, distinct color)
     ...COMMENTARIES.flatMap(comm =>
       Object.entries(comm.books).flatMap(([book, chapters]) =>
         Object.keys(chapters).map(ch => ({
@@ -225,7 +225,6 @@ function GraphScreen({ navigation }) {
 
 
   const edges = [
-    // Existing Gospel edges (unchanged)
     { from: 'Matthew', to: 'Mark' },
     { from: 'Mark', to: 'Luke' },
     { from: 'Luke', to: 'John' },
@@ -237,7 +236,6 @@ function GraphScreen({ navigation }) {
       }))
     ),
 
-    // Commentary links
     ...COMMENTARIES.flatMap(comm =>
       Object.entries(comm.books).flatMap(([book, chapters]) =>
         Object.keys(chapters).map(ch => ({
@@ -316,11 +314,9 @@ function GraphScreen({ navigation }) {
     const parts = event.nativeEvent.data.split('-');
 
     if (parts.length === 2) {
-      // Gospel chapter
       const [book, chapter] = parts;
       navigation.navigate('Reader', { book, chapter });
     } else if (parts.length === 3) {
-      // Commentary chapter
       const [author, book, chapter] = parts;
       navigation.navigate('Reader', { book: `${author}-${book}`, chapter });
     }
@@ -412,27 +408,274 @@ function SettingsScreen() {
   );
 }
 
+function IntroSlide({ slide, width, height }) {
+  if (slide.id === 's1') {
+    return (
+      <ImageBackground
+        source={introslide1_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: height * 0.4, 
+            left: width * 0.05, 
+            width: width * 0.9, 
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              marginBottom: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              What is Logos Network?
+            </Text>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              marginBottom: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              It is a scholar's vault for Scriptural and Patristic studies, especially for Catholic usage.
+            </Text>
+          </View>
+
+          {/* Box 3 */}
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              Read the Holy Bible and Church Fathers, explore interconnections visually, select writings based on themes, authors and chapters.
+            </Text>
+          </View>
+        </View>
+      </ImageBackground>
+    );
+  }
+  if (slide.id === 's2') {
+    return (
+      <ImageBackground
+        source={introslide2_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        {/* Header box */}
+        <View
+          style={{
+            backgroundColor: '#03032E',
+            paddingVertical: 16,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            marginTop: height * 0.05,
+            marginHorizontal: width * 0.05,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+            What inspired its creation?
+          </Text>
+        </View>
+
+        {/* Container for horizontal image-text pairs */}
+        <View
+          style={{
+            paddingHorizontal: width * 0.05,
+          }}
+        >
+        <View
+          style={{
+            flexDirection: 'row',
+            marginBottom: 20,
+            borderRadius: 16,
+            overflow: 'hidden',
+            backgroundColor: '#03032E',
+            alignItems: 'stretch',
+          }}
+        >
+          <Image
+            source={introslide2_box1}
+            style={{
+              width: 120,
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+          <View
+            style={{
+              flex: 1,
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+            }}
+          >
+              <Text style={{ color: '#fff', fontSize: 16, lineHeight: 22 }}>
+                Catena Aurea by St. Thomas Aquinas, an unmatched compilation of Patristic commentary on the Gospels composed by the Angelic Doctor, one of the greatest scholars and theologians to ever be gifted by God to our Holy Church.
+              </Text>
+            </View>
+          </View>
+
+        <View
+          style={{
+            flexDirection: 'row',
+            marginBottom: 20,
+            borderRadius: 16,
+            overflow: 'hidden',
+            backgroundColor: '#03032E',
+            alignItems: 'stretch',
+          }}
+        >
+          <Image
+            source={introslide2_box2}
+            style={{
+              width: 120,
+              height: '100%',
+            }}
+            resizeMode="cover"
+          />
+          <View
+            style={{
+              flex: 1,
+              paddingVertical: 16,
+              paddingHorizontal: 16,
+              justifyContent: 'center',
+              backgroundColor: 'transparent',
+            }}
+        >
+              <Text style={{ color: '#fff', fontSize: 16, lineHeight: 22 }}>
+                Commentary upon the Douay-Rheims Bible by fr. George Leo Haydock, work of his whole life, in which he combined Patristic opinions directly from their Homilies, often scattered, which he gathered together, with scholarly notes on linguistics and history.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ImageBackground>);
+  }
+  if (slide.id === 's3') {
+    return (
+      <ImageBackground
+        source={introslide3_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: height * 0.4, 
+            left: width * 0.05, 
+            width: width * 0.9, 
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 7,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              marginBottom: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              What is the purpose?
+            </Text>
+          </View>
+
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              marginBottom: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              Representation of interconnectedness of Scripture and Patristic writings, displaying Tradition holistically, as a living body, not isolated texts scattered aroung the internet. 
+            </Text>
+          </View>
+          <View
+            style={{
+              backgroundColor: '#03032E',
+              paddingVertical: 14,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              alignSelf: 'flex-start',
+              maxWidth: '90%',
+            }}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
+              Most importantly, to serve the King of Kings.
+            </Text>
+          </View>
+        </View>
+      </ImageBackground>
+    );
+  }
+  return <View style={{ width, height, backgroundColor: '#000' }} />;
+}
+
+
+
+
+
+
+
 function SplashScreen({ onFinish }) {
   const fadeCross = useRef(new Animated.Value(0)).current;
   const fadeWelcome = useRef(new Animated.Value(0)).current;
-  const fadeButton = useRef(new Animated.Value(0)).current;
+  const fadeButtons = useRef(new Animated.Value(0)).current;
+  const { width, height } = Dimensions.get('window');
+
+  const introSlides = [
+    { id: 's1' },
+    { id: 's2' },
+    { id: 's3' },
+    { id: 's4' },
+    { id: 's5' },
+    { id: 's6' },
+    { id: 's7' },
+  ];
+
   const insets = useSafeAreaInsets();
+  const [showIntro, setShowIntro] = React.useState(false);
+  const [currentSlide, setCurrentSlide] = React.useState(0);
 
   React.useEffect(() => {
     Animated.stagger(400, [
       Animated.timing(fadeCross, { toValue: 1, duration: 600, useNativeDriver: true }),
       Animated.timing(fadeWelcome, { toValue: 1, duration: 600, useNativeDriver: true }),
-      Animated.timing(fadeButton, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(fadeButtons, { toValue: 1, duration: 600, useNativeDriver: true }),
     ]).start();
   }, []);
 
-  const handleStartPress = () => {
-    Animated.parallel([
-      Animated.timing(fadeCross, { toValue: 0, duration: 600, useNativeDriver: true }),
-      Animated.timing(fadeWelcome, { toValue: 0, duration: 600, useNativeDriver: true }),
-      Animated.timing(fadeButton, { toValue: 0, duration: 600, useNativeDriver: true }),
-    ]).start(() => onFinish());
-  };
+  const handleIntroductionPress = () => setShowIntro(true);
+  const handleProceedPress = () => onFinish();
 
   return (
     <View style={{ flex: 1 }}>
@@ -442,35 +685,78 @@ function SplashScreen({ onFinish }) {
         resizeMode="cover"
       >
         <View style={{ flex: 1, paddingTop: insets.top, paddingBottom: insets.bottom }}>
-          <View style={{ flex: 8, justifyContent: 'center', alignItems: 'center' }}>
-            <Animated.View style={{ opacity: fadeCross, alignItems: 'center' }}>
-              <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>✠</Text>
-            </Animated.View>
-            <Animated.View style={{ opacity: fadeWelcome, alignItems: 'center' }}>
-              <Text style={{ fontSize: 25, color: '#fff', textAlign: 'center', marginBottom: 20 }}>
-                Welcome to the Logos App!
-              </Text>
-            </Animated.View>
-          </View>
-          <View style={{ flex: 2, justifyContent: 'center', alignItems: 'center' }}>
-            <Animated.View style={{ opacity: fadeButton }}>
-              <Text
-                style={{
-                  fontSize: 20,
-                  color: '#fff',
-                  paddingVertical: 14,
-                  paddingHorizontal: 50,
-                  backgroundColor: '#03032E',
-                  borderRadius: 30,
-                  overflow: 'hidden',
-                  textAlign: 'center',
-                }}
-                onPress={handleStartPress}
-              >
-                Start ➔
-              </Text>
-            </Animated.View>
-          </View>
+          {!showIntro && (
+            <>
+              <View style={{ flex: 8, justifyContent: 'center', alignItems: 'center' }}>
+                <Animated.View style={{ opacity: fadeCross, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>✠</Text>
+                </Animated.View>
+                <Animated.View style={{ opacity: fadeWelcome, alignItems: 'center' }}>
+                  <Text
+                    style={{ fontSize: 25, color: '#fff', textAlign: 'center', marginBottom: 20 }}
+                  >
+                    Welcome to the Logos App!
+                  </Text>
+                </Animated.View>
+              </View>
+              <View style={{ flex: 2, justifyContent: 'center', alignItems: 'center' }}>
+                <Animated.View style={{ opacity: fadeButtons }}>
+                  <Text
+                    style={{
+                      fontSize: 20,
+                      color: '#fff',
+                      paddingVertical: 14,
+                      paddingHorizontal: 40,
+                      backgroundColor: '#03032E',
+                      borderRadius: 30,
+                      overflow: 'hidden',
+                      textAlign: 'center',
+                      marginBottom: 60,
+                    }}
+                    onPress={handleIntroductionPress}
+                  >
+                    Introduction →
+                  </Text>
+                </Animated.View>
+              </View>
+            </>
+          )}
+
+          {showIntro && (
+            <FlatList
+              data={introSlides}
+              keyExtractor={(item) => item.id}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const index = Math.round(e.nativeEvent.contentOffset.x / width);
+                setCurrentSlide(index);
+              }}
+              renderItem={({ item }) => (
+                <IntroSlide slide={item} width={width} height={height} />
+              )}
+              style={{ position: 'absolute', top: 0, left: 0, width, height }}
+            />
+          )}
+
+          <Text
+            style={{
+              position: 'absolute',
+              bottom: insets.bottom + 20,
+              left: '30%',
+              fontSize: 16,
+              color: '#ffffffaa',
+              paddingVertical: 10,
+              paddingHorizontal: 20,
+              backgroundColor: '#03032E33',
+              borderRadius: 20,
+              textAlign: 'center',
+            }}
+            onPress={handleProceedPress}
+          >
+            Proceed to App
+          </Text>
         </View>
       </ImageBackground>
     </View>
