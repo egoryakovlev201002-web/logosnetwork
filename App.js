@@ -19,9 +19,13 @@ import introslide2_background from './assets/introslide2_background.jpg';
 import introslide2_box1 from './assets/introslide2_box1.jpg';
 import introslide2_box2 from './assets/introslide2_box2.jpg';
 import introslide3_background from './assets/introslide3_background.jpg';
-import ChristTheKing from './assets/ChristTheKing.jpg';
-import TheSacredHeart from './assets/TheSacredHeart.jpg';
-
+import screenshot1 from './assets/screenshot1.jpg';
+import introslide4_background from './assets/introslide4_background.jpg';
+import screenshot2 from './assets/screenshot2.jpg';
+import introslide5_background from './assets/introslide5_background.jpg';
+import screenshot3 from './assets/screenshot3.jpg';
+import introslide6_background from './assets/introslide6_background.jpg';
+import introslide7_background from './assets/introslide7_background.jpg';
 
 
 const ThemeContext = React.createContext();
@@ -636,6 +640,248 @@ function IntroSlide({ slide, width, height }) {
         </View>
       </ImageBackground>
     );
+  }
+  if (slide.id === 's4') {
+    return (
+      <ImageBackground
+        source={introslide4_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            backgroundColor: '#03032E',
+            paddingVertical: 16,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            marginTop: height * 0.05,
+            marginHorizontal: width * 0.05,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+            How to use the app?
+          </Text>
+        </View>
+        <View style={{ height: height * 0.03 }} />
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            paddingHorizontal: width * 0.05,
+            marginTop: height * 0.03,
+          }}
+        >
+          <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
+            {[
+              'Search for a node you need, representing a chapter from Scripture, a homily, or a theology tractate...',
+              '…or explore freely by following connections between books and authors.',
+              'All nodes are clickable, except index nodes for Scripture books.',
+              'Once you click a node...→',
+            ].map((text, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: '#03032E',
+                  padding: 14,
+                  borderRadius: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 15 }}>{text}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-start', paddingLeft: 12 }}>
+            <Image
+              source={screenshot1}
+              style={{ width: '100%', aspectRatio: 0.5, resizeMode: 'contain' }}
+            />
+          </View>
+        </View>
+      </ImageBackground>
+    )
+  }
+  if (slide.id === 's5') {
+  return (
+      <ImageBackground
+        source={introslide5_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            backgroundColor: '#03032E',
+            paddingVertical: 16,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            marginTop: height * 0.05,
+            marginHorizontal: width * 0.05,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+            ...the selected text is opened in the Reader tab!
+          </Text>
+        </View>
+        <View style={{ height: height * 0.03 }} />
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            paddingHorizontal: width * 0.05,
+            marginTop: height * 0.03,
+          }}
+        >
+          <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
+            {[
+              'Here you can read the selected passage.',
+              'And multiple passages can be opened in separate windows, switchable at the top bar',
+              'For the safety of your device, only 5 windows can be opened at a time, but it is enough to keep multiple references while reading your particular passage',
+            ].map((text, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: '#03032E',
+                  padding: 14,
+                  borderRadius: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 15 }}>{text}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-start', paddingLeft: 12  }}>
+            <Image
+              source={screenshot2}
+              style={{ width: '100%', aspectRatio: 0.5, resizeMode: 'contain' }}
+            />
+          </View>
+        </View>
+      </ImageBackground>
+    )
+  }
+    if (slide.id === 's6') {
+  return (
+      <ImageBackground
+        source={introslide6_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            backgroundColor: '#03032E',
+            paddingVertical: 16,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            marginTop: height * 0.05,
+            marginHorizontal: width * 0.05,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+            You can always manage the way your app looks in Settings tab.
+          </Text>
+        </View>
+        <View style={{ height: height * 0.03 }} />
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            paddingHorizontal: width * 0.05,
+            marginTop: height * 0.03,
+          }}
+        >
+          <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
+            {[
+              'But for now there is only a theme switcher...',
+              'I promise more settings will be added in future updates!',
+            ].map((text, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: '#03032E',
+                  padding: 14,
+                  borderRadius: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 15 }}>{text}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-start', paddingLeft: 12  }}>
+            <Image
+              source={screenshot3}
+              style={{ width: '100%', aspectRatio: 0.5, resizeMode: 'contain' }}
+            />
+          </View>
+        </View>
+      </ImageBackground>
+    )
+  }
+    if (slide.id === 's7') {
+  return (
+      <ImageBackground
+        source={introslide7_background}
+        style={{ width, height }}
+        resizeMode="cover"
+      >
+        <View
+          style={{
+            backgroundColor: '#03032E',
+            paddingVertical: 16,
+            paddingHorizontal: 20,
+            borderRadius: 12,
+            marginTop: height * 0.05,
+            marginHorizontal: width * 0.05,
+            marginBottom: 24,
+          }}
+        >
+          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+            Disclaimer!
+          </Text>
+        </View>
+        <View style={{ height: height * 0.03 }} />
+
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            paddingHorizontal: width * 0.05,
+            marginTop: height * 0.03,
+          }}
+        >
+          <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
+            {[
+              'This app is made by a lay teenager in process of catechisation for entering the full communion with the Catholic Church, with no education in software development;',
+              'It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it;',
+              'Use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es;',
+              'Pray for me, a sinner, and for each other, to our Lord Jesus Christ, eternal begotten Son of True God and to His Most Holy Mother, the Immaculate Virgin Mary, our Queen and Mother, for intercession.'
+            ].map((text, i) => (
+              <View
+                key={i}
+                style={{
+                  backgroundColor: '#03032E',
+                  padding: 14,
+                  borderRadius: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 15 }}>{text}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ImageBackground>
+    )
   }
   return <View style={{ width, height, backgroundColor: '#000' }} />;
 }
