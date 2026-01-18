@@ -460,7 +460,6 @@ function IntroSlide({ slide, width, height }) {
             </Text>
           </View>
 
-          {/* Box 3 */}
           <View
             style={{
               backgroundColor: '#03032E',
@@ -486,7 +485,6 @@ function IntroSlide({ slide, width, height }) {
         style={{ width, height }}
         resizeMode="cover"
       >
-        {/* Header box */}
         <View
           style={{
             backgroundColor: '#03032E',
@@ -503,7 +501,6 @@ function IntroSlide({ slide, width, height }) {
           </Text>
         </View>
 
-        {/* Container for horizontal image-text pairs */}
         <View
           style={{
             paddingHorizontal: width * 0.05,
@@ -738,9 +735,9 @@ function IntroSlide({ slide, width, height }) {
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
-              'Here you can read the selected passage.',
-              'And multiple passages can be opened in separate windows, switchable at the top bar',
-              'For the safety of your device, only 5 windows can be opened at a time, but it is enough to keep multiple references while reading your particular passage',
+              'Here you can read the selected passage. Note that the Bible translation used is Douay-Rheims.',
+              'And multiple passages can be opened in separate windows, switchable at the top bar.',
+              'For the safety of your device, only 5 windows can be opened at a time, but it is enough to keep multiple references while reading your particular passage.',
             ].map((text, i) => (
               <View
                 key={i}
