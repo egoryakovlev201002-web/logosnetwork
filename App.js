@@ -14,6 +14,7 @@ import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
 import ChrysostomOnMatthew from './assets/ChrysostomOnMatthew.json';
 import ChrysostomOnJohn from './assets/ChrysostomOnJohn.json';
+import CyrilOfAlexandriaOnLuke from './assets/CyrilOfAlexandriaOnLuke.json';
 import introslide1_background from './assets/introslide1_background.jpg';
 import introslide2_background from './assets/introslide2_background.jpg';
 import introslide2_box1 from './assets/introslide2_box1.jpg';
@@ -40,7 +41,16 @@ const COMMENTARIES = [
       John: ChrysostomOnJohn,
     },
   },
+  {
+    id: 'Cyril',
+    author: 'Cyril of Alexandria',
+    color: '#ecd501', // choose a unique color for this commentary
+    books: {
+      Luke: CyrilOfAlexandriaOnLuke,
+    },
+  },
 ];
+
 const Tab = createBottomTabNavigator();
 
 function CustomHeader({ title, colors }) {
@@ -667,7 +677,7 @@ function IntroSlide({ slide, width, height }) {
             flex: 1,
             flexDirection: 'row',
             paddingHorizontal: width * 0.05,
-            marginTop: height * 0.03,
+            marginTop: height * 0.06,
           }}
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
