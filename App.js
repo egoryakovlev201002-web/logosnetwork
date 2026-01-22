@@ -26,7 +26,7 @@ import introslide5_background from './assets/introslide5_background.jpg';
 import screenshot3 from './assets/screenshot3.jpg';
 import introslide6_background from './assets/introslide6_background.jpg';
 import introslide7_background from './assets/introslide7_background.jpg';
-import CyrilOfAlexandriaOnLuke from '../assets/CyrilOfAlexandriaOnLuke.json';
+import CyrilOfAlexandriaOnLuke from './assets/CyrilOfAlexandriaOnLuke.json';
 
 
 
@@ -869,10 +869,10 @@ function IntroSlide({ slide, width, height }) {
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
-              'This app is made by a lay teenager in process of catechisation for entering the full communion with the Catholic Church, with no education in software development;',
+              'This app is made by a lay teenager in process of entering the full communion with the Catholic Church, with no education in software development;',
               'It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it;',
               'Use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es;',
-              'Pray for me, a sinner, and for each other, to our Lord Jesus Christ, eternal begotten Son of True God and to His Most Holy Mother, the Immaculate Virgin Mary, our Queen and Mother, for intercession.'
+              'Give glory Lord Jesus Christ, eternal begotten Son of True God and pray to Immaculate Virgin Mary, our Queen and Mother, for intercession.'
             ].map((text, i) => (
               <View
                 key={i}
