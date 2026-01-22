@@ -14,7 +14,6 @@ import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
 import ChrysostomOnMatthew from './assets/ChrysostomOnMatthew.json';
 import ChrysostomOnJohn from './assets/ChrysostomOnJohn.json';
-import CyrilOfAlexandriaOnLuke from './assets/CyrilOfAlexandriaOnLuke.json';
 import introslide1_background from './assets/introslide1_background.jpg';
 import introslide2_background from './assets/introslide2_background.jpg';
 import introslide2_box1 from './assets/introslide2_box1.jpg';
@@ -27,6 +26,8 @@ import introslide5_background from './assets/introslide5_background.jpg';
 import screenshot3 from './assets/screenshot3.jpg';
 import introslide6_background from './assets/introslide6_background.jpg';
 import introslide7_background from './assets/introslide7_background.jpg';
+import CyrilOfAlexandriaOnLuke from '../assets/CyrilOfAlexandriaOnLuke.json';
+
 
 
 const ThemeContext = React.createContext();

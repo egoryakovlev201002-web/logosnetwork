@@ -24,5 +24,9 @@
     "react-native-vis-network": "^2.0.0",
     "react-native-webview": "13.15.0"
   },
+  "devDependencies": {
+    "@react-native-community/cli": "latest",
+    "@react-native/metro-config": "latest"
+  },
   "private": true
 }
