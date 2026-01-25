@@ -45,7 +45,7 @@ const COMMENTARIES = [
   {
     id: 'Cyril',
     author: 'Cyril of Alexandria',
-    color: '#ecd501', // choose a unique color for this commentary
+    color: '#ecd501',
     books: {
       Luke: CyrilOfAlexandriaOnLuke,
     },
@@ -95,7 +95,7 @@ function ReaderScreen({ route }) {
       }
 
       const updated = [newWindow, ...prev];
-      if (updated.length > 5) updated.pop(); // limit 5 windows
+      if (updated.length > 5) updated.pop(); 
       setActiveWindow(newWindow.id);
       return updated;
     });
