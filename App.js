@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { Image, Animated, Dimensions, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
 import { WebView } from 'react-native-webview';
 import haydockImage from './assets/haydock.jpg';
 import John from './assets/JOHN.json';
@@ -27,10 +28,20 @@ import screenshot3 from './assets/screenshot3.jpg';
 import introslide6_background from './assets/introslide6_background.jpg';
 import introslide7_background from './assets/introslide7_background.jpg';
 import CyrilOfAlexandriaOnLuke from './assets/CyrilOfAlexandriaOnLuke.json';
-
+import CardoFont from './assets/Cardo.ttf';
+import EBGaramondFont from './assets/EBGaramond.ttf';
+import LoraFont from './assets/Lora.ttf';
+import MerriweatherFont from './assets/Merriweather.ttf';
 
 
 const ThemeContext = React.createContext();
+const FONT_OPTIONS = [
+  { key: 'Standard', label: 'Standard', fontFamily: undefined, webFontFamily: 'system-ui' },
+  { key: 'Cardo', label: 'Cardo', fontFamily: 'Cardo', webFontFamily: 'Cardo' },
+  { key: 'EB Garamond', label: 'EB Garamond', fontFamily: 'EBGaramond', webFontFamily: 'EB Garamond' },
+  { key: 'Lora', label: 'Lora', fontFamily: 'Lora', webFontFamily: 'Lora' },
+  { key: 'Merriweather', label: 'Merriweather', fontFamily: 'Merriweather', webFontFamily: 'Merriweather' },
+];
 const BOOKS = { John, Mark, Luke, Matthew };
 const COMMENTARIES = [
   {
@@ -102,6 +113,9 @@ const GRAPH_HTML = `
   <!DOCTYPE html>
   <html>
   <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cardo&family=EB+Garamond:wght@400;500;600&family=Lora:wght@400;500;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <style>
       html, body { margin: 0; height: 100%; }
       body { background: #ffffff; }
@@ -121,7 +135,7 @@ const GRAPH_HTML = `
           shape: 'dot',
           size: 20,
           color: { background: '#fff', border: '#000' },
-          font: { color: '#000000', size: 14 }
+          font: { color: '#000000', size: 14, face: 'system-ui' }
         },
         edges: { color: '#888', smooth: true },
         layout: { hierarchical: false },
@@ -129,15 +143,26 @@ const GRAPH_HTML = `
       };
       window.network = new vis.Network(window.graphContainer, window.graphData, window.graphOptions);
 
-      window.applyTheme = function(backgroundColor, textColor) {
+      window.applyTheme = function(backgroundColor, textColor, fontFace) {
         document.body.style.backgroundColor = backgroundColor;
         if (window.graphContainer) {
           window.graphContainer.style.backgroundColor = backgroundColor;
         }
         if (window.network) {
+          const currentNodes = window.graphNodes.get();
+          window.graphNodes.update(
+            currentNodes.map(node => ({
+              id: node.id,
+              font: {
+                ...(node.font || {}),
+                color: textColor,
+                face: fontFace || 'system-ui'
+              }
+            }))
+          );
           window.network.setOptions({
             nodes: {
-              font: { color: textColor }
+              font: { color: textColor, face: fontFace || 'system-ui' }
             }
           });
           if (window.network.redraw) {
@@ -169,6 +194,7 @@ const Tab = createBottomTabNavigator();
 
 function CustomHeader({ title, colors }) {
   const insets = useSafeAreaInsets();
+  const { selectedFontFamily } = React.useContext(ThemeContext);
   return (
     <View style={{
       backgroundColor: colors.background,
@@ -180,13 +206,13 @@ function CustomHeader({ title, colors }) {
       justifyContent: 'center',
       alignItems: 'center'
     }}>
-      <Text style={{ fontSize: 22, fontWeight: '600', color: colors.text }}>{title}</Text>
+      <Text style={{ fontSize: 22, fontWeight: '600', color: colors.text, fontFamily: selectedFontFamily }}>{title}</Text>
     </View>
   );
 }
 
 function ReaderScreen({ route }) {
-  const { colors } = React.useContext(ThemeContext);
+  const { colors, selectedFontFamily } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
   const [windows, setWindows] = React.useState([]);
@@ -226,11 +252,13 @@ function ReaderScreen({ route }) {
   const activeData = activeWindow ? activeWindow.split('-') : [];
   let chapterData = null;
   let displayTitle = '';
+  let showParagraphNumbers = false;
 
   if (activeData.length === 2) {
     const [book, chapter] = activeData;
     chapterData = BOOKS[book]?.[chapter];
     displayTitle = `${book} ${chapter}`;
+    showParagraphNumbers = true;
   } else if (activeData.length === 3) {
     const [author, book, chapter] = activeData;
     chapterData = COMMENTARIES.find(c => c.id === author)?.books[book]?.[chapter];
@@ -259,13 +287,13 @@ function ReaderScreen({ route }) {
               }}
             >
               <Text
-                style={{ color: colors.text, marginRight: 6 }}
+                style={{ color: colors.text, marginRight: 6, fontFamily: selectedFontFamily }}
                 onPress={() => setActiveWindow(win.id)}
               >
                 {win.book} {win.chapter}
               </Text>
               <Text
-                style={{ color: colors.text, fontWeight: 'bold' }}
+                style={{ color: colors.text, fontWeight: 'bold', fontFamily: selectedFontFamily }}
                 onPress={() => closeWindow(win.id)}
               >
                 ✕
@@ -282,18 +310,18 @@ function ReaderScreen({ route }) {
         flexGrow: 1
       }}>
         {!chapterData ? (
-          <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40 }}>
+          <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40, fontFamily: selectedFontFamily }}>
             Please select a passage via Graph Screen.
           </Text>
         ) : (
           <>
-            <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 0 }}>
+            <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 0, fontFamily: selectedFontFamily }}>
               {displayTitle}
             </Text>
 
             {chapterData?.map((line, index) => (
-              <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 0 }}>
-                {index + 1}. {line}
+              <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 0, fontFamily: selectedFontFamily }}>
+                {showParagraphNumbers ? `${index + 1}. ` : ''}{line}
               </Text>
             ))}
           </>
@@ -305,9 +333,13 @@ function ReaderScreen({ route }) {
 
 
 function GraphScreen({ navigation }) {
-  const { colors } = React.useContext(ThemeContext);
+  const { colors, selectedFontKey, selectedFontFamily } = React.useContext(ThemeContext);
   const [searchText, setSearchText] = React.useState('');
   const webViewRef = React.useRef(null);
+  const selectedGraphFontFace = React.useMemo(
+    () => FONT_OPTIONS.find(option => option.key === selectedFontKey)?.webFontFamily ?? 'system-ui',
+    [selectedFontKey]
+  );
 
   const formatNodeLabel = (id) => {
     const parts = id.split('-');
@@ -336,11 +368,15 @@ function GraphScreen({ navigation }) {
 
     webViewRef.current.injectJavaScript(`
       if (window.applyTheme) {
-        window.applyTheme(${JSON.stringify(colors.background)}, ${JSON.stringify(colors.graphText)});
+        window.applyTheme(
+          ${JSON.stringify(colors.background)},
+          ${JSON.stringify(colors.graphText)},
+          ${JSON.stringify(selectedGraphFontFace)}
+        );
       }
       true;
     `);
-  }, [colors.background, colors.graphText]);
+  }, [colors.background, colors.graphText, selectedGraphFontFace]);
 
   React.useEffect(() => {
     applyGraphTheme();
@@ -384,6 +420,7 @@ function GraphScreen({ navigation }) {
             paddingVertical: 6,
             borderRadius: 8,
             fontSize: 16,
+            fontFamily: selectedFontFamily,
           }}
         />
         {filteredNodes.length > 0 && (
@@ -407,7 +444,7 @@ function GraphScreen({ navigation }) {
                 onPress={() => handleSelectNode(item.id)}
                 style={{ padding: 10, borderBottomWidth: 1, borderBottomColor: colors.text + '22' }}
               >
-                <Text style={{ color: colors.text }}>{formatNodeLabel(item.id)}</Text>
+                <Text style={{ color: colors.text, fontFamily: selectedFontFamily }}>{formatNodeLabel(item.id)}</Text>
               </TouchableOpacity>
             )}
           />
@@ -430,8 +467,10 @@ function GraphScreen({ navigation }) {
 
 
 function SettingsScreen() {
-  const { darkMode, toggleDarkMode, colors } = React.useContext(ThemeContext);
+  const { darkMode, toggleDarkMode, colors, selectedFontKey, setSelectedFontKey, selectedFontFamily } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
+  const [fontMenuOpen, setFontMenuOpen] = React.useState(false);
+  const selectedFontLabel = FONT_OPTIONS.find(option => option.key === selectedFontKey)?.label ?? 'Standard';
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingBottom: insets.bottom, paddingHorizontal: 16 }}>
@@ -443,13 +482,73 @@ function SettingsScreen() {
         borderBottomWidth: 1,
         borderBottomColor: colors.text + '33'
       }}>
-        <Text style={{ fontSize: 18, color: colors.text }}>Dark Mode</Text>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Dark Mode</Text>
         <Switch
           value={darkMode}
           onValueChange={toggleDarkMode}
           thumbColor={darkMode ? '#fff' : '#fff'}
           trackColor={{ false: '#999', true: '#4a90e2' }}
         />
+      </View>
+
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.text + '33'
+      }}>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Font</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            onPress={() => setFontMenuOpen(prev => !prev)}
+            style={{
+              minWidth: 170,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: colors.text + '44',
+              backgroundColor: colors.text + '11',
+            }}
+          >
+            <Text style={{ color: colors.text, fontSize: 16, fontFamily: selectedFontFamily, textAlign: 'right' }}>
+              {selectedFontLabel} v
+            </Text>
+          </TouchableOpacity>
+
+          {fontMenuOpen && (
+            <View style={{
+              marginTop: 8,
+              width: 170,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: colors.text + '33',
+              backgroundColor: colors.background,
+              overflow: 'hidden',
+            }}>
+              {FONT_OPTIONS.map(option => (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => {
+                    setSelectedFontKey(option.key);
+                    setFontMenuOpen(false);
+                  }}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    backgroundColor: option.key === selectedFontKey ? colors.text + '11' : 'transparent',
+                  }}
+                >
+                  <Text style={[{ color: colors.text, fontSize: 16 }, option.fontFamily ? { fontFamily: option.fontFamily } : null]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -577,7 +676,7 @@ function IntroSlide({ slide, width, height }) {
             }}
           >
               <Text style={{ color: '#fff', fontSize: 16, lineHeight: 22 }}>
-                Catena Aurea by St. Thomas Aquinas, an unmatched compilation of Patristic commentary on the Gospels composed by the Angelic Doctor, one of the greatest scholars and theologians to ever be gifted by God to our Holy Church.
+                An Exact Exposition of the Orthodox Faith by St. John of Damascus, a systematic compendium of Orthodox theology, in order to faithfully explain the correct interpretation of the Greek Fathers. Up to this day it remains one of the boooks most frequently recommended for catechumens and inquirers.
               </Text>
             </View>
           </View>
@@ -610,7 +709,7 @@ function IntroSlide({ slide, width, height }) {
             }}
         >
               <Text style={{ color: '#fff', fontSize: 16, lineHeight: 22 }}>
-                Commentary upon the Douay-Rheims Bible by fr. George Leo Haydock, work of his whole life, in which he combined Patristic opinions directly from their Homilies, often scattered, which he gathered together, with scholarly notes on linguistics and history.
+                The Ambigua by St. Maximus the Confessor, the astonishing genius of the Byzantine theology, a detailed explanation of some of the most complicated passages of the Greek Fathers. Even though it is explicitly not a scriptural commentary, it is quite fitting to inspire the project aimed at collecting patristic works. 
               </Text>
             </View>
           </View>
@@ -840,7 +939,7 @@ function IntroSlide({ slide, width, height }) {
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
-              'But for now there is only a theme switcher...',
+              'But for now there is only a theme switcher and a font selector...',
               'I promise more settings will be added in future updates!',
             ].map((text, i) => (
               <View
@@ -901,7 +1000,7 @@ function IntroSlide({ slide, width, height }) {
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
-              'This app is made by a lay teenager in process of entering the full communion with the Catholic Church, with no education in software development;',
+              'This app is made by a lay orthodox teenager with no education in software development;',
               'It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it;',
               'Use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es;',
               'Give glory Lord Jesus Christ, eternal begotten Son of True God and pray to Immaculate Virgin Mary, our Queen and Mother, for intercession.'
@@ -1050,6 +1149,8 @@ function SplashScreen({ onFinish }) {
 }
 
 function TabButton({ label, background, focused, colors }) {
+  const { selectedFontFamily } = React.useContext(ThemeContext);
+
   return (
     <ImageBackground
       source={background}
@@ -1080,6 +1181,7 @@ function TabButton({ label, background, focused, colors }) {
           color: '#ffffff',
           textTransform: 'uppercase',
           letterSpacing: 0.5,
+          fontFamily: selectedFontFamily,
         }}
       >
         {label}
@@ -1161,12 +1263,45 @@ function AppTabs() {
 
 export default function App() {
   const navigationRef = useNavigationContainerRef();
+  const baseTextDefaultsRef = React.useRef(Text.defaultProps ?? {});
+  const baseTextInputDefaultsRef = React.useRef(TextInput.defaultProps ?? {});
   const [darkMode, setDarkMode] = React.useState(false);
   const [showSplash, setShowSplash] = React.useState(true);
+  const [selectedFontKey, setSelectedFontKey] = React.useState('Standard');
+  const [fontsLoaded] = useFonts({
+    Cardo: CardoFont,
+    EBGaramond: EBGaramondFont,
+    Lora: LoraFont,
+    Merriweather: MerriweatherFont,
+  });
   const toggleDarkMode = React.useCallback(() => setDarkMode(prev => !prev), []);
+  const selectedFontFamily = React.useMemo(
+    () => FONT_OPTIONS.find(option => option.key === selectedFontKey)?.fontFamily,
+    [selectedFontKey]
+  );
+
+  React.useEffect(() => {
+    const textDefaults = baseTextDefaultsRef.current;
+    const textInputDefaults = baseTextInputDefaultsRef.current;
+    const nextTextStyle = [textDefaults.style, selectedFontFamily ? { fontFamily: selectedFontFamily } : null].filter(Boolean);
+    const nextInputStyle = [textInputDefaults.style, selectedFontFamily ? { fontFamily: selectedFontFamily } : null].filter(Boolean);
+
+    Text.defaultProps = {
+      ...textDefaults,
+      style: nextTextStyle.length <= 1 ? nextTextStyle[0] : nextTextStyle,
+    };
+    TextInput.defaultProps = {
+      ...textInputDefaults,
+      style: nextInputStyle.length <= 1 ? nextInputStyle[0] : nextInputStyle,
+    };
+  }, [selectedFontFamily]);
+
   const theme = React.useMemo(() => ({
     darkMode,
     toggleDarkMode,
+    selectedFontKey,
+    setSelectedFontKey,
+    selectedFontFamily,
     colors: darkMode
       ? {
         background: '#03032E',
@@ -1178,7 +1313,7 @@ export default function App() {
         text: '#2B1D0E',
         graphText: '#2B1D0E',
       },
-  }), [darkMode, toggleDarkMode]);
+  }), [darkMode, toggleDarkMode, selectedFontKey, selectedFontFamily]);
 
   const [currentTitle, setCurrentTitle] = React.useState('Reader');
 
@@ -1193,7 +1328,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StatusBar barStyle={darkMode ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
-      {showSplash ? (
+      {!fontsLoaded ? null : showSplash ? (
         <SplashScreen onFinish={() => setShowSplash(false)} />
       ) : (
         <ThemeContext.Provider value={theme}>
