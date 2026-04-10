@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { Image, Animated, Dimensions, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
@@ -51,6 +51,119 @@ const COMMENTARIES = [
     },
   },
 ];
+
+const GRAPH_NODES = [
+  { id: 'John', label: 'John', color: '#ff9999' },
+  { id: 'Mark', label: 'Mark', color: '#99ff99' },
+  { id: 'Luke', label: 'Luke', color: '#9999ff' },
+  { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
+
+  ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+    Object.keys(chapters).map(ch => ({
+      id: `${book}-${ch}`,
+      label: `${book} ${ch}`,
+    }))
+  ),
+
+  ...COMMENTARIES.flatMap(comm =>
+    Object.entries(comm.books).flatMap(([book, chapters]) =>
+      Object.keys(chapters).map(ch => ({
+        id: `${comm.id}-${book}-${ch}`,
+        label: `${comm.author} on ${book} ${ch}`,
+        color: comm.color,
+      }))
+    )
+  ),
+];
+
+const GRAPH_EDGES = [
+  { from: 'Matthew', to: 'Mark' },
+  { from: 'Mark', to: 'Luke' },
+  { from: 'Luke', to: 'John' },
+
+  ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+    Object.keys(chapters).map(ch => ({
+      from: book,
+      to: `${book}-${ch}`,
+    }))
+  ),
+
+  ...COMMENTARIES.flatMap(comm =>
+    Object.entries(comm.books).flatMap(([book, chapters]) =>
+      Object.keys(chapters).map(ch => ({
+        from: `${book}-${ch}`,
+        to: `${comm.id}-${book}-${ch}`,
+      }))
+    )
+  ),
+];
+
+const GRAPH_HTML = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      body { background: #ffffff; }
+      #network { width: 100%; height: 100%; background: transparent; }
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  </head>
+  <body>
+    <div id="network"></div>
+    <script type="text/javascript">
+      window.graphNodes = new vis.DataSet(${JSON.stringify(GRAPH_NODES)});
+      window.graphEdges = new vis.DataSet(${JSON.stringify(GRAPH_EDGES)});
+      window.graphContainer = document.getElementById('network');
+      window.graphData = { nodes: window.graphNodes, edges: window.graphEdges };
+      window.graphOptions = {
+        nodes: {
+          shape: 'dot',
+          size: 20,
+          color: { background: '#fff', border: '#000' },
+          font: { color: '#000000', size: 14 }
+        },
+        edges: { color: '#888', smooth: true },
+        layout: { hierarchical: false },
+        interaction: { hover: false }
+      };
+      window.network = new vis.Network(window.graphContainer, window.graphData, window.graphOptions);
+
+      window.applyTheme = function(backgroundColor, textColor) {
+        document.body.style.backgroundColor = backgroundColor;
+        if (window.graphContainer) {
+          window.graphContainer.style.backgroundColor = backgroundColor;
+        }
+        if (window.network) {
+          window.network.setOptions({
+            nodes: {
+              font: { color: textColor }
+            }
+          });
+          if (window.network.redraw) {
+            window.network.redraw();
+          }
+        }
+      };
+
+      window.selectNode = function(nodeId) {
+        if (window.network && nodeId) {
+          window.network.unselectAll();
+          window.network.selectNodes([nodeId]);
+          window.network.focus(nodeId, { scale: 1.5, animation: true });
+        }
+      };
+
+      window.network.on('click', function(params) {
+        const node = params.nodes[0];
+        if (node) {
+          window.ReactNativeWebView.postMessage(node);
+        }
+      });
+    </script>
+  </body>
+  </html>
+`;
 
 const Tab = createBottomTabNavigator();
 
@@ -194,7 +307,6 @@ function ReaderScreen({ route }) {
 function GraphScreen({ navigation }) {
   const { colors } = React.useContext(ThemeContext);
   const [searchText, setSearchText] = React.useState('');
-  const [filteredNodes, setFilteredNodes] = React.useState([]);
   const webViewRef = React.useRef(null);
 
   const formatNodeLabel = (id) => {
@@ -213,65 +325,29 @@ function GraphScreen({ navigation }) {
     return id;
   };
 
+  const filteredNodes = React.useMemo(() => {
+    if (!searchText) return [];
+    const lower = searchText.toLowerCase();
+    return GRAPH_NODES.filter(n => formatNodeLabel(n.id).toLowerCase().includes(lower));
+  }, [searchText]);
 
-  const nodes = [
-    { id: 'John', label: 'John', color: '#ff9999' },
-    { id: 'Mark', label: 'Mark', color: '#99ff99' },
-    { id: 'Luke', label: 'Luke', color: '#9999ff' },
-    { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
+  const applyGraphTheme = React.useCallback(() => {
+    if (!webViewRef.current) return;
 
-    ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
-      Object.keys(chapters).map(ch => ({
-        id: `${book}-${ch}`,
-        label: `${book} ${ch}`,
-      }))
-    ),
-
-    ...COMMENTARIES.flatMap(comm =>
-      Object.entries(comm.books).flatMap(([book, chapters]) =>
-        Object.keys(chapters).map(ch => ({
-          id: `${comm.id}-${book}-${ch}`,
-          label: `${comm.author} on ${book} ${ch}`,
-          color: comm.color,
-        }))
-      )
-    ),
-  ];
-
-
-  const edges = [
-    { from: 'Matthew', to: 'Mark' },
-    { from: 'Mark', to: 'Luke' },
-    { from: 'Luke', to: 'John' },
-
-    ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
-      Object.keys(chapters).map(ch => ({
-        from: book,
-        to: `${book}-${ch}`,
-      }))
-    ),
-
-    ...COMMENTARIES.flatMap(comm =>
-      Object.entries(comm.books).flatMap(([book, chapters]) =>
-        Object.keys(chapters).map(ch => ({
-          from: `${book}-${ch}`,
-          to: `${comm.id}-${book}-${ch}`,
-        }))
-      )
-    ),
-  ];
-
+    webViewRef.current.injectJavaScript(`
+      if (window.applyTheme) {
+        window.applyTheme(${JSON.stringify(colors.background)}, ${JSON.stringify(colors.graphText)});
+      }
+      true;
+    `);
+  }, [colors.background, colors.graphText]);
 
   React.useEffect(() => {
-    if (!searchText) return setFilteredNodes([]);
-    const lower = searchText.toLowerCase();
-    const partialMatches = nodes.filter(n => formatNodeLabel(n.id).toLowerCase().includes(lower));
-    setFilteredNodes(partialMatches);
-  }, [searchText]);
+    applyGraphTheme();
+  }, [applyGraphTheme]);
 
   const handleSelectNode = (nodeId) => {
     setSearchText('');
-    setFilteredNodes([]);
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(`
         if(window.selectNode) { window.selectNode("${nodeId}"); }
@@ -279,51 +355,6 @@ function GraphScreen({ navigation }) {
       `);
     }
   };
-
-  const html = `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <style>
-      html, body { margin:0; height:100%; }
-      #network { width:100%; height:100%; background: ${colors.background}; }
-    </style>
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  </head>
-  <body>
-    <div id="network"></div>
-    <script type="text/javascript">
-      window.graphNodes = new vis.DataSet(${JSON.stringify(nodes)});
-      window.graphEdges = new vis.DataSet(${JSON.stringify(edges)});
-      window.graphContainer = document.getElementById('network');
-      window.graphData = { nodes: window.graphNodes, edges: window.graphEdges };
-      window.graphOptions = { 
-        nodes: { shape: 'dot', size: 20, color: { background: '#fff', border: '#000' }, font: {color: '${colors.graphText}', size: 14, } },
-        edges: { color: '#888', smooth: true },
-        layout: { hierarchical: false },
-        interaction: { hover: true }
-      };
-      window.network = new vis.Network(window.graphContainer, window.graphData, window.graphOptions);
-
-      window.selectNode = function(nodeId) {
-        if(window.network && nodeId) {
-          window.network.unselectAll();
-          window.network.selectNodes([nodeId]);
-          window.network.focus(nodeId, { scale: 1.5, animation: true });
-        }
-      }
-
-      window.network.on('click', function(params) {
-        const node = params.nodes[0];
-        if (node) {
-          window.ReactNativeWebView.postMessage(node);
-        }
-      });
-
-    </script>
-  </body>
-  </html>
-`;
 
   const handleMessage = (event) => {
     const parts = event.nativeEvent.data.split('-');
@@ -386,8 +417,9 @@ function GraphScreen({ navigation }) {
       <WebView
         ref={webViewRef}
         originWhitelist={['*']}
-        source={{ html }}
+        source={{ html: GRAPH_HTML }}
         style={{ flex: 1 }}
+        onLoadEnd={applyGraphTheme}
         onMessage={handleMessage}
       />
     </View>
@@ -901,9 +933,9 @@ function IntroSlide({ slide, width, height }) {
 
 
 function SplashScreen({ onFinish }) {
-  const fadeCross = useRef(new Animated.Value(0)).current;
-  const fadeWelcome = useRef(new Animated.Value(0)).current;
-  const fadeButtons = useRef(new Animated.Value(0)).current;
+  const fadeCross = React.useRef(new Animated.Value(0)).current;
+  const fadeWelcome = React.useRef(new Animated.Value(0)).current;
+  const fadeButtons = React.useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get('window');
 
   const introSlides = [
@@ -1131,23 +1163,22 @@ export default function App() {
   const navigationRef = useNavigationContainerRef();
   const [darkMode, setDarkMode] = React.useState(false);
   const [showSplash, setShowSplash] = React.useState(true);
-
-  const theme = {
+  const toggleDarkMode = React.useCallback(() => setDarkMode(prev => !prev), []);
+  const theme = React.useMemo(() => ({
     darkMode,
-    toggleDarkMode: () => setDarkMode(prev => !prev),
+    toggleDarkMode,
     colors: darkMode
       ? {
         background: '#03032E',
         text: '#ffffff',
         graphText: '#ffffff',
       }
-      :{
+      : {
         background: '#F5EAD6',
         text: '#2B1D0E',
         graphText: '#2B1D0E',
       },
-
-  };
+  }), [darkMode, toggleDarkMode]);
 
   const [currentTitle, setCurrentTitle] = React.useState('Reader');
 
