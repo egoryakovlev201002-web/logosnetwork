@@ -217,6 +217,10 @@ function ReaderScreen({ route }) {
 
   const [windows, setWindows] = React.useState([]);
   const [activeWindow, setActiveWindow] = React.useState(null);
+  const [readerSearchOpen, setReaderSearchOpen] = React.useState(false);
+  const [readerSearchText, setReaderSearchText] = React.useState('');
+  const readerScrollRef = React.useRef(null);
+  const linePositionsRef = React.useRef({});
 
   React.useEffect(() => {
     if (!route.params?.book || !route.params?.chapter) return;
@@ -265,13 +269,124 @@ function ReaderScreen({ route }) {
     displayTitle = `${author} on ${book} ${chapter}`;
   }
 
+  React.useEffect(() => {
+    setReaderSearchOpen(false);
+    setReaderSearchText('');
+    linePositionsRef.current = {};
+  }, [activeWindow]);
+
+  const matchingLineIndices = React.useMemo(() => {
+    const query = readerSearchText.trim().toLowerCase();
+    if (!query || !chapterData) return [];
+
+    return chapterData.reduce((matches, line, index) => {
+      if (String(line).toLowerCase().includes(query)) matches.push(index);
+      return matches;
+    }, []);
+  }, [chapterData, readerSearchText]);
+
+  const [activeMatchIndex, setActiveMatchIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    setActiveMatchIndex(0);
+  }, [readerSearchText, activeWindow]);
+
+  const scrollToMatch = React.useCallback((matchPosition) => {
+    const lineIndex = matchingLineIndices[matchPosition];
+    const y = linePositionsRef.current[lineIndex];
+
+    if (readerScrollRef.current && typeof y === 'number') {
+      readerScrollRef.current.scrollTo({ y: Math.max(y - 80, 0), animated: true });
+    }
+  }, [matchingLineIndices]);
+
+  React.useEffect(() => {
+    if (!readerSearchText.trim() || matchingLineIndices.length === 0) return;
+    scrollToMatch(activeMatchIndex);
+  }, [activeMatchIndex, matchingLineIndices, readerSearchText, scrollToMatch]);
+
+  const cycleMatch = (direction) => {
+    if (matchingLineIndices.length === 0) return;
+
+    setActiveMatchIndex(prev => {
+      const next = prev + direction;
+      if (next < 0) return matchingLineIndices.length - 1;
+      if (next >= matchingLineIndices.length) return 0;
+      return next;
+    });
+  };
+
+  const renderHighlightedLine = React.useCallback((line, index) => {
+    const prefix = showParagraphNumbers ? `${index + 1}. ` : '';
+    const fullText = `${prefix}${line}`;
+    const query = readerSearchText.trim();
+
+    if (!query) return fullText;
+
+    const lowerText = fullText.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const parts = [];
+    let cursor = 0;
+
+    while (cursor < fullText.length) {
+      const matchIndex = lowerText.indexOf(lowerQuery, cursor);
+
+      if (matchIndex === -1) {
+        if (cursor < fullText.length) {
+          parts.push(
+            <Text key={`plain-${index}-${cursor}`} style={{ color: colors.text }}>
+              {fullText.slice(cursor)}
+            </Text>
+          );
+        }
+        break;
+      }
+
+      if (matchIndex > cursor) {
+        parts.push(
+          <Text key={`plain-${index}-${cursor}`} style={{ color: colors.text }}>
+            {fullText.slice(cursor, matchIndex)}
+          </Text>
+        );
+      }
+
+      const isActiveLine = matchingLineIndices[activeMatchIndex] === index;
+      parts.push(
+        <Text
+          key={`match-${index}-${matchIndex}`}
+          style={{
+            backgroundColor: isActiveLine ? '#f5d76e' : colors.text + '22',
+            color: isActiveLine ? '#111111' : colors.text,
+          }}
+        >
+          {fullText.slice(matchIndex, matchIndex + query.length)}
+        </Text>
+      );
+
+      cursor = matchIndex + query.length;
+    }
+
+    return parts;
+  }, [activeMatchIndex, colors.text, matchingLineIndices, readerSearchText, showParagraphNumbers]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       {windows.length > 0 && (
         <ScrollView
           horizontal
-          style={{ flexDirection: 'row', paddingHorizontal: 8, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: colors.text + '55' }}
-          contentContainerStyle={{ alignItems: 'center' }}
+          showsHorizontalScrollIndicator={false}
+          style={{
+            flexGrow: 0,
+            flexShrink: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.text + '55',
+          }}
+          contentContainerStyle={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 8,
+            paddingVertical: 6,
+          }}
         >
           {windows.map(win => (
             <View
@@ -296,37 +411,137 @@ function ReaderScreen({ route }) {
                 style={{ color: colors.text, fontWeight: 'bold', fontFamily: selectedFontFamily }}
                 onPress={() => closeWindow(win.id)}
               >
-                ✕
+                {'\u2715'}
               </Text>
             </View>
           ))}
         </ScrollView>
       )}
 
-      <ScrollView contentContainerStyle={{
-        paddingTop: 12,
-        paddingBottom: insets.bottom + 20,
-        paddingHorizontal: 16,
-        flexGrow: 1
-      }}>
-        {!chapterData ? (
-          <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40, fontFamily: selectedFontFamily }}>
-            Please select a passage via Graph Screen.
-          </Text>
-        ) : (
-          <>
-            <Text style={{ fontSize: 28, fontWeight: '600', color: colors.text, marginBottom: 0, fontFamily: selectedFontFamily }}>
-              {displayTitle}
-            </Text>
-
-            {chapterData?.map((line, index) => (
-              <Text key={index} style={{ color: colors.text, fontSize: 18, marginBottom: 0, fontFamily: selectedFontFamily }}>
-                {showParagraphNumbers ? `${index + 1}. ` : ''}{line}
-              </Text>
-            ))}
-          </>
+      <View style={{ flex: 1, position: 'relative' }}>
+        {chapterData && (
+          <View
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              zIndex: 10,
+              width: readerSearchOpen ? '76%' : undefined,
+              maxWidth: 320,
+            }}
+          >
+            {!readerSearchOpen ? (
+              <TouchableOpacity
+                onPress={() => setReaderSearchOpen(true)}
+                style={{
+                  alignSelf: 'flex-end',
+                  backgroundColor: colors.text + '11',
+                  borderWidth: 1,
+                  borderColor: colors.text + '22',
+                  borderRadius: 999,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                }}
+              >
+                <Text style={{ color: colors.text + 'cc', fontSize: 14, fontFamily: selectedFontFamily }}>
+                  Search in this text...
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View
+                style={{
+                  backgroundColor: colors.background,
+                  borderWidth: 1,
+                  borderColor: colors.text + '22',
+                  borderRadius: 12,
+                  padding: 10,
+                }}
+              >
+                <TextInput
+                  placeholder="Search in this text..."
+                  placeholderTextColor={colors.text + '88'}
+                  value={readerSearchText}
+                  onChangeText={setReaderSearchText}
+                  autoFocus
+                  style={{
+                    backgroundColor: colors.text + '11',
+                    color: colors.text,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 8,
+                    fontSize: 15,
+                    fontFamily: selectedFontFamily,
+                  }}
+                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  <Text style={{ color: colors.text + 'cc', flex: 1, fontSize: 13, fontFamily: selectedFontFamily }}>
+                    {readerSearchText.trim()
+                      ? matchingLineIndices.length > 0
+                        ? `${activeMatchIndex + 1} of ${matchingLineIndices.length} matches`
+                        : 'No matches'
+                      : 'Type to search within the open text'}
+                  </Text>
+                  <TouchableOpacity onPress={() => cycleMatch(-1)} style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Prev</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => cycleMatch(1)} style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Next</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setReaderSearchOpen(false);
+                      setReaderSearchText('');
+                    }}
+                    style={{ paddingHorizontal: 8, paddingVertical: 4 }}
+                  >
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
         )}
-      </ScrollView>
+
+        <ScrollView ref={readerScrollRef} contentContainerStyle={{
+          paddingTop: 12,
+          paddingBottom: insets.bottom + 20,
+          paddingHorizontal: 16,
+          flexGrow: 1
+        }}>
+          {!chapterData ? (
+            <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40, fontFamily: selectedFontFamily }}>
+              Please select a passage via Graph Screen.
+            </Text>
+          ) : (
+            <>
+              <Text
+                style={{
+                  fontSize: 28,
+                  fontWeight: '600',
+                  color: colors.text,
+                  marginBottom: 0,
+                  marginRight: readerSearchOpen ? 250 : 160,
+                  fontFamily: selectedFontFamily
+                }}
+              >
+                {displayTitle}
+              </Text>
+
+              {chapterData?.map((line, index) => (
+                <Text
+                  key={index}
+                  onLayout={(event) => {
+                    linePositionsRef.current[index] = event.nativeEvent.layout.y;
+                  }}
+                  style={{ color: colors.text, fontSize: 18, marginBottom: 0, fontFamily: selectedFontFamily }}
+                >
+                  {renderHighlightedLine(line, index)}
+                </Text>
+              ))}
+            </>
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -815,9 +1030,9 @@ function IntroSlide({ slide, width, height }) {
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
               'Search for a node you need, representing a chapter from Scripture, a homily, or a theology tractate...',
-              '…or explore freely by following connections between books and authors.',
+              '\u2026or explore freely by following connections between books and authors.',
               'All nodes are clickable, except index nodes for Scripture books.',
-              'Once you click a node...→',
+              'Once you click a node...\u2192',
             ].map((text, i) => (
               <View
                 key={i}
@@ -1074,7 +1289,7 @@ function SplashScreen({ onFinish }) {
             <>
               <View style={{ flex: 8, justifyContent: 'center', alignItems: 'center' }}>
                 <Animated.View style={{ opacity: fadeCross, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>✠</Text>
+                  <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>{'\u2720'}</Text>
                 </Animated.View>
                 <Animated.View style={{ opacity: fadeWelcome, alignItems: 'center' }}>
                   <Text
@@ -1100,7 +1315,7 @@ function SplashScreen({ onFinish }) {
                     }}
                     onPress={handleIntroductionPress}
                   >
-                    Introduction →
+                    Introduction {'\u2192'}
                   </Text>
                 </Animated.View>
               </View>
@@ -1343,3 +1558,4 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
+
