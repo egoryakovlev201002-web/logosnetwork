@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { Image, Animated, Dimensions, ImageBackground, ScrollView, StatusBar, Switch, Text, View, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
@@ -41,6 +41,50 @@ const FONT_OPTIONS = [
   { key: 'EB Garamond', label: 'EB Garamond', fontFamily: 'EBGaramond', webFontFamily: 'EB Garamond' },
   { key: 'Lora', label: 'Lora', fontFamily: 'Lora', webFontFamily: 'Lora' },
   { key: 'Merriweather', label: 'Merriweather', fontFamily: 'Merriweather', webFontFamily: 'Merriweather' },
+];
+const INTRO_QA = [
+  {
+    id: 's1',
+    question: 'What is Logos Network?',
+    answer:
+      "It is a scholar's vault for Scriptural and Patristic studies, especially for Orthodox usage. Read the Holy Bible and Church Fathers, explore interconnections visually, and select writings based on themes, authors and chapters.",
+  },
+  {
+    id: 's2',
+    question: 'What inspired its creation?',
+    answer:
+      'An Exact Exposition of the Orthodox Faith by St. John of Damascus, a systematic compendium of Orthodox theology, in order to faithfully explain the correct interpretation of the Greek Fathers. Up to this day it remains one of the boooks most frequently recommended for catechumens and inquirers. The Ambigua by St. Maximus the Confessor, the astonishing genius of the Byzantine theology, a detailed explanation of some of the most complicated passages of the Greek Fathers. Even though it is explicitly not a scriptural commentary, it is quite fitting to inspire the project aimed at collecting patristic works.',
+  },
+  {
+    id: 's3',
+    question: 'What is the purpose?',
+    answer:
+      'Representation of interconnectedness of Scripture and Patristic writings, displaying Tradition holistically, as a living body, not isolated texts scattered aroung the internet. Most importantly, to serve the King of Kings.',
+  },
+  {
+    id: 's4',
+    question: 'How to use the app?',
+    answer:
+      'Search for a node you need, representing a chapter from Scripture, a homily, or a theology tractate. Or explore freely by following connections between books and authors. All nodes are clickable, except index nodes for Scripture books. Once you click a node, the selected text is opened in the Reader tab.',
+  },
+  {
+    id: 's5',
+    question: 'What happens when I click a node?',
+    answer:
+      'You immediately go to the Reader tab. Here you can read the selected passage. Note that the Bible translation used is Douay-Rheims. And multiple passages can be opened in separate windows, switchable at the top bar. For the safety of your device, only 5 windows can be opened at a time, but it is enough to keep multiple references while reading your particular passage.',
+  },
+  {
+    id: 's6',
+    question: 'What about settings?',
+    answer:
+      'You can always manage the way your app looks in Settings tab. But for now there is only a theme switcher and a font selector... I promise more settings will be added in future updates!',
+  },
+  {
+    id: 's7',
+    question: 'What should I know before using the app?',
+    answer:
+      'This app is made by a lay orthodox teenager with no education in software development; It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it; use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es; Give glory to our Lord Jesus Christ, eternal begotten Son of God and pray to the Holy Theotokos, our Queen and Mother, for intercession.',
+  },
 ];
 const BOOKS = { John, Mark, Luke, Matthew };
 const COMMENTARIES = [
@@ -684,8 +728,20 @@ function GraphScreen({ navigation }) {
 function SettingsScreen() {
   const { darkMode, toggleDarkMode, colors, selectedFontKey, setSelectedFontKey, selectedFontFamily } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
+  const { width } = Dimensions.get('window');
   const [fontMenuOpen, setFontMenuOpen] = React.useState(false);
+  const [qaOpen, setQaOpen] = React.useState(false);
+  const qaSlide = React.useRef(new Animated.Value(0)).current;
   const selectedFontLabel = FONT_OPTIONS.find(option => option.key === selectedFontKey)?.label ?? 'Standard';
+  const qaPanelWidth = Math.min(width * 0.88, 430);
+
+  React.useEffect(() => {
+    Animated.timing(qaSlide, {
+      toValue: qaOpen ? 1 : 0,
+      duration: 260,
+      useNativeDriver: true,
+    }).start();
+  }, [qaOpen, qaSlide]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background, paddingTop: 12, paddingBottom: insets.bottom, paddingHorizontal: 16 }}>
@@ -765,6 +821,115 @@ function SettingsScreen() {
           )}
         </View>
       </View>
+
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.text + '33'
+      }}>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Q&A</Text>
+        <TouchableOpacity
+          onPress={() => setQaOpen(true)}
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: colors.text + '44',
+            backgroundColor: colors.text + '11',
+          }}
+        >
+          <Text style={{ color: colors.text, fontSize: 16, fontFamily: selectedFontFamily }}>
+            Open Q&A
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <Animated.View
+        pointerEvents={qaOpen ? 'auto' : 'none'}
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          backgroundColor: colors.background + '88',
+          opacity: qaSlide,
+          zIndex: 20,
+        }}
+      >
+        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={() => setQaOpen(false)} />
+      </Animated.View>
+
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: qaPanelWidth,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 12,
+          paddingHorizontal: 16,
+          backgroundColor: colors.background,
+          borderLeftWidth: 1,
+          borderLeftColor: colors.text + '22',
+          zIndex: 21,
+          transform: [
+            {
+              translateX: qaSlide.interpolate({
+                inputRange: [0, 1],
+                outputRange: [qaPanelWidth + 24, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingBottom: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.text + '22',
+          marginBottom: 12,
+        }}>
+          <Text style={{ color: colors.text, fontSize: 22, fontFamily: selectedFontFamily }}>Q&A</Text>
+          <TouchableOpacity
+            onPress={() => setQaOpen(false)}
+            style={{
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 999,
+              backgroundColor: colors.text + '11',
+            }}
+          >
+            <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Close</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+          {INTRO_QA.map((item) => (
+            <View
+              key={item.id}
+              style={{
+                marginBottom: 14,
+                padding: 14,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: colors.text + '22',
+                backgroundColor: colors.text + '08',
+              }}
+            >
+              <Text style={{ color: colors.text, fontSize: 17, marginBottom: 8, fontFamily: selectedFontFamily, fontWeight: '700' }}>
+                Question: {item.question}
+              </Text>
+              <Text style={{ color: colors.text, fontSize: 16, lineHeight: 24, fontFamily: selectedFontFamily }}>
+                Answer: {item.answer}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -813,7 +978,7 @@ function IntroSlide({ slide, width, height }) {
             }}
           >
             <Text style={{ color: '#fff', fontSize: 18, lineHeight: 24 }}>
-              It is a scholar's vault for Scriptural and Patristic studies, especially for Catholic usage.
+              It is a scholar's vault for Scriptural and Patristic studies, especially for Orthodox usage. 
             </Text>
           </View>
 
@@ -1218,7 +1383,7 @@ function IntroSlide({ slide, width, height }) {
               'This app is made by a lay orthodox teenager with no education in software development;',
               'It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it;',
               'Use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es;',
-              'Give glory Lord Jesus Christ, eternal begotten Son of True God and pray to Immaculate Virgin Mary, our Queen and Mother, for intercession.'
+              'Give glory to ourLord Jesus Christ, eternal begotten Son of True God and pray to Immaculate Virgin Mary, our Queen and Mother, for intercession.'
             ].map((text, i) => (
               <View
                 key={i}
