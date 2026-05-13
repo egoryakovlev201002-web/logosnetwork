@@ -83,7 +83,7 @@ const INTRO_QA = [
     id: 's7',
     question: 'What should I know before using the app?',
     answer:
-      'This app is made by a lay orthodox teenager with no education in software development; It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it; use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es; Give glory to our Lord Jesus Christ, eternal begotten Son of God and pray to the Holy Theotokos, our Queen and Mother, for intercession.',
+      'This app is made by a lay orthodox teenager with no education in software development; it is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it; use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es; Give glory to our Lord Jesus Christ, eternal begotten Son of God and pray to the Holy Theotokos, our Queen and Mother, for intercession.',
   },
 ];
 const BOOKS = { John, Mark, Luke, Matthew };
@@ -1454,7 +1454,7 @@ function SplashScreen({ onFinish }) {
             <>
               <View style={{ flex: 8, justifyContent: 'center', alignItems: 'center' }}>
                 <Animated.View style={{ opacity: fadeCross, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>{'\u2720'}</Text>
+                  <Text style={{ fontSize: 100, color: '#fff', marginBottom: 20 }}>{'☨'}</Text>
                 </Animated.View>
                 <Animated.View style={{ opacity: fadeWelcome, alignItems: 'center' }}>
                   <Text
@@ -1723,4 +1723,3 @@ export default function App() {
     </SafeAreaProvider>
   );
 }
-
