@@ -1560,7 +1560,7 @@ function IntroSlide({ slide, width, height }) {
         >
           <View style={{ flex: 1,  justifyContent: 'flex-start',}}>
             {[
-              'But for now there is only a theme switcher and a font selector...',
+              'For now there are: a theme switcher, a font selector, a language selector (two languages available, English and Russian)...',
               'I promise more settings will be added in future updates!',
             ].map((text, i) => (
               <View
@@ -1624,7 +1624,7 @@ function IntroSlide({ slide, width, height }) {
               'This app is made by a lay orthodox teenager with no education in software development;',
               'It is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it;',
               'Use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es;',
-              'Give glory to ourLord Jesus Christ, eternal begotten Son of True God and pray to Immaculate Virgin Mary, our Queen and Mother, for intercession.'
+              'Give glory to ourLord Jesus Christ, eternal begotten Son of True God and pray to the Virgin Mary, our Queen and Mother, for intercession.'
             ].map((text, i) => (
               <View
                 key={i}
