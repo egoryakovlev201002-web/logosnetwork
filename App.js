@@ -10,6 +10,10 @@ import John from './assets/JOHN.json';
 import Luke from './assets/LUKE.json';
 import Mark from './assets/MARK.json';
 import Matthew from './assets/MATTHEW.json';
+import JohnRus from './assets/JOHN_RUS.json';
+import LukeRus from './assets/LUKE_RUS.json';
+import MarkRus from './assets/MARK_RUS.json';
+import MatthewRus from './assets/MATTHEW_RUS.json';
 import readerBg from './assets/tab-bg/reader.jpg';
 import graphBg from './assets/tab-bg/graph.png';
 import settingsBg from './assets/tab-bg/settings.png';
@@ -86,8 +90,53 @@ const INTRO_QA = [
       'This app is made by a lay orthodox teenager with no education in software development; it is not an official Church product, it is not endorsed by any Church authority and I sincerely apologise for any errors you may find in it; use it for personal study and prayer, if you will, and I am very grateful for any use. If you have any suggestions, please contact me via email: egor.yakovlev@mascamarena.es; Give glory to our Lord Jesus Christ, eternal begotten Son of God and pray to the Holy Theotokos, our Queen and Mother, for intercession.',
   },
 ];
-const BOOKS = { John, Mark, Luke, Matthew };
-const COMMENTARIES = [
+const INTRO_QA_RU = [
+  {
+    id: 's1',
+    question: 'Что такое Logos Network?',
+    answer:
+      'Это хранилище для изучения Священного Писания и святоотеческих текстов, особенно для использования православными. Здесь можно читать Библию и отцов Церкви, визуально исследовать связи между текстами и выбирать произведения по темам, авторам и главам.',
+  },
+  {
+    id: 's2',
+    question: 'Что вдохновило на приложение?',
+    answer:
+      'Точное Изложение Православной Веры Преподобного Иоанна Дамаскина, систематический свод православного богословия, до сих пор остающийся одним из самых рекомендуемых для катехизиса и всех интересующихся православием. Амбигва отца Максима Исповедника, поразительного мыслителя византийского богословия, подробное объяснение одних из самых сложных отрывков греческих отцов. Несмотря на то, что это явно не библейский комментарий, он вполне подходит для вдохновения проекта, направленного на соединение святоотеческих трудов.',
+  },
+  {
+    id: 's3',
+    question: 'Какова цель приложения?',
+    answer:
+      'Показать взаимосвязь Писания и святоотеческих трудов, чтобы Предание воспринималось целостно, как живое тело, а не как разрозненные тексты в интернете. Прежде всего - служить Царю царей.',
+  },
+  {
+    id: 's4',
+    question: 'Как пользоваться приложением?',
+    answer:
+      'Найдите нужный узел: главу Писания, беседу или богословский трактат. Можно также свободно двигаться по связям между книгами и авторами. Все узлы кликабельны, кроме указателей книг Писания. При нажатии выбранный текст открывается во вкладке чтения.',
+  },
+  {
+    id: 's5',
+    question: 'Что происходит при нажатии на узел?',
+    answer:
+      'Вы сразу переходите во вкладку чтения, где открывается выбранный отрывок. В русском режиме используются русские тексты Евангелий из базы приложения. Несколько отрывков можно открыть в отдельных окнах и переключаться между ними сверху.',
+  },
+  {
+    id: 's6',
+    question: 'Что можно настроить?',
+    answer:
+      'Во вкладке настроек можно менять тему, шрифт и язык интерфейса. В будущих версиях настроек станет больше!',
+  },
+  {
+    id: 's7',
+    question: 'Что важно знать перед использованием?',
+    answer:
+      'Приложение сделано школьником без образования в разработке приложений, это не официальный церковный продукт и не издание, одобренное церковной властью. Приложение сделано для личного изучения и молитвы; автор будет благодарен за замечания и предложения по адресу egor.yakovlev@mascamarena.es.',
+  },
+];
+const BOOKS_EN = { John, Mark, Luke, Matthew };
+const BOOKS_RU = { John: JohnRus, Mark: MarkRus, Luke: LukeRus, Matthew: MatthewRus };
+const COMMENTARIES_EN = [
   {
     id: 'Chrysostom',
     author: 'Chrysostom',
@@ -106,44 +155,132 @@ const COMMENTARIES = [
     },
   },
 ];
+const COMMENTARIES_RU = [];
+const BOOK_LABELS = {
+  en: {
+    John: 'John',
+    Mark: 'Mark',
+    Luke: 'Luke',
+    Matthew: 'Matthew',
+  },
+  ru: {
+    John: 'От Иоанна',
+    Mark: 'От Марка',
+    Luke: 'От Луки',
+    Matthew: 'От Матфея',
+  },
+};
+const LANGUAGE_OPTIONS = [
+  { key: 'en', label: 'English' },
+  { key: 'ru', label: 'Русский' },
+];
+const TRANSLATIONS = {
+  en: {
+    language: 'Language',
+    darkMode: 'Dark Mode',
+    font: 'Font',
+    qAndA: 'Q&A',
+    openQAndA: 'Open Q&A',
+    close: 'Close',
+    question: 'Question',
+    answer: 'Answer',
+    readerSearchPlaceholder: 'Search in this text...',
+    readerSearchEmpty: 'Type to search within the open text',
+    matches: (current, total) => `${current} of ${total} matches`,
+    noMatches: 'No matches',
+    prev: 'Prev',
+    next: 'Next',
+    selectPassage: 'Please select a passage via Graph Screen.',
+    graphSearchPlaceholder: 'Search a node...',
+    on: 'on',
+    tabs: {
+      Reader: 'Reader',
+      Graph: 'Graph',
+      Settings: 'Settings',
+    },
+    introWelcome: 'Welcome to the Logos App!',
+    introduction: 'Introduction',
+    proceed: 'Proceed to App',
+    qa: INTRO_QA,
+  },
+  ru: {
+    language: 'Язык',
+    darkMode: 'Тёмная тема',
+    font: 'Шрифт',
+    qAndA: 'Вопросы и ответы',
+    openQAndA: 'Открыть',
+    close: 'Закрыть',
+    question: 'Вопрос',
+    answer: 'Ответ',
+    readerSearchPlaceholder: 'Поиск в этом тексте...',
+    readerSearchEmpty: 'Введите запрос для поиска в открытом тексте',
+    matches: (current, total) => `${current} из ${total} совпадений`,
+    noMatches: 'Совпадений нет',
+    prev: 'Назад',
+    next: 'Далее',
+    selectPassage: 'Выберите текст на вкладке графа.',
+    graphSearchPlaceholder: 'Найти текст...',
+    on: 'на',
+    tabs: {
+      Reader: 'Чтение',
+      Graph: 'Граф',
+      Settings: 'Настройки',
+    },
+    introWelcome: 'Добро пожаловать в Logos Network!',
+    introduction: 'Введение',
+    proceed: 'Перейти в приложение',
+    qa: INTRO_QA_RU,
+  },
+};
+const LOCALE_DATA = {
+  en: {
+    books: BOOKS_EN,
+    commentaries: COMMENTARIES_EN,
+    bookLabels: BOOK_LABELS.en,
+  },
+  ru: {
+    books: BOOKS_RU,
+    commentaries: COMMENTARIES_RU,
+    bookLabels: BOOK_LABELS.ru,
+  },
+};
+const buildGraphNodes = (localeData) => [
+  { id: 'John', label: localeData.bookLabels.John, color: '#ff9999' },
+  { id: 'Mark', label: localeData.bookLabels.Mark, color: '#99ff99' },
+  { id: 'Luke', label: localeData.bookLabels.Luke, color: '#9999ff' },
+  { id: 'Matthew', label: localeData.bookLabels.Matthew, color: '#ffff99' },
 
-const GRAPH_NODES = [
-  { id: 'John', label: 'John', color: '#ff9999' },
-  { id: 'Mark', label: 'Mark', color: '#99ff99' },
-  { id: 'Luke', label: 'Luke', color: '#9999ff' },
-  { id: 'Matthew', label: 'Matthew', color: '#ffff99' },
-
-  ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+  ...Object.entries(localeData.books).flatMap(([book, chapters]) =>
     Object.keys(chapters).map(ch => ({
       id: `${book}-${ch}`,
-      label: `${book} ${ch}`,
+      label: `${localeData.bookLabels[book] ?? book} ${ch}`,
     }))
   ),
 
-  ...COMMENTARIES.flatMap(comm =>
+  ...localeData.commentaries.flatMap(comm =>
     Object.entries(comm.books).flatMap(([book, chapters]) =>
       Object.keys(chapters).map(ch => ({
         id: `${comm.id}-${book}-${ch}`,
-        label: `${comm.author} on ${book} ${ch}`,
+        label: `${comm.author} on ${localeData.bookLabels[book] ?? book} ${ch}`,
         color: comm.color,
       }))
     )
   ),
 ];
 
-const GRAPH_EDGES = [
+const buildGraphEdges = (localeData) => [
   { from: 'Matthew', to: 'Mark' },
   { from: 'Mark', to: 'Luke' },
   { from: 'Luke', to: 'John' },
 
-  ...Object.entries(BOOKS).flatMap(([book, chapters]) =>
+  ...Object.entries(localeData.books).flatMap(([book, chapters]) =>
     Object.keys(chapters).map(ch => ({
       from: book,
       to: `${book}-${ch}`,
     }))
   ),
 
-  ...COMMENTARIES.flatMap(comm =>
+  ...localeData.commentaries.flatMap(comm =>
     Object.entries(comm.books).flatMap(([book, chapters]) =>
       Object.keys(chapters).map(ch => ({
         from: `${book}-${ch}`,
@@ -153,7 +290,7 @@ const GRAPH_EDGES = [
   ),
 ];
 
-const GRAPH_HTML = `
+const createGraphHtml = (nodes, edges) => `
   <!DOCTYPE html>
   <html>
   <head>
@@ -170,8 +307,8 @@ const GRAPH_HTML = `
   <body>
     <div id="network"></div>
     <script type="text/javascript">
-      window.graphNodes = new vis.DataSet(${JSON.stringify(GRAPH_NODES)});
-      window.graphEdges = new vis.DataSet(${JSON.stringify(GRAPH_EDGES)});
+      window.graphNodes = new vis.DataSet(${JSON.stringify(nodes)});
+      window.graphEdges = new vis.DataSet(${JSON.stringify(edges)});
       window.graphContainer = document.getElementById('network');
       window.graphData = { nodes: window.graphNodes, edges: window.graphEdges };
       window.graphOptions = {
@@ -183,9 +320,23 @@ const GRAPH_HTML = `
         },
         edges: { color: '#888', smooth: true },
         layout: { hierarchical: false },
-        interaction: { hover: false }
+        interaction: {
+          hover: false,
+          dragNodes: false,
+          hideEdgesOnDrag: true,
+          hideNodesOnDrag: false
+        },
+        physics: {
+          stabilization: {
+            enabled: true,
+            fit: true
+          }
+        }
       };
       window.network = new vis.Network(window.graphContainer, window.graphData, window.graphOptions);
+      window.network.once('stabilized', function() {
+        window.network.setOptions({ physics: false });
+      });
 
       window.applyTheme = function(backgroundColor, textColor, fontFace) {
         document.body.style.backgroundColor = backgroundColor;
@@ -236,6 +387,16 @@ const GRAPH_HTML = `
 
 const Tab = createBottomTabNavigator();
 
+const formatReaderTitle = (bookParam, chapter, localeData, t) => {
+  const parts = bookParam.split('-');
+  if (parts.length === 2) {
+    const [author, book] = parts;
+    const commentary = localeData.commentaries.find(c => c.id === author);
+    return `${commentary?.author ?? author} ${t.on} ${localeData.bookLabels[book] ?? book} ${chapter}`;
+  }
+  return `${localeData.bookLabels[bookParam] ?? bookParam} ${chapter}`;
+};
+
 function CustomHeader({ title, colors }) {
   const insets = useSafeAreaInsets();
   const { selectedFontFamily } = React.useContext(ThemeContext);
@@ -256,7 +417,7 @@ function CustomHeader({ title, colors }) {
 }
 
 function ReaderScreen({ route }) {
-  const { colors, selectedFontFamily } = React.useContext(ThemeContext);
+  const { colors, selectedFontFamily, localeData, t } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
 
   const [windows, setWindows] = React.useState([]);
@@ -304,13 +465,14 @@ function ReaderScreen({ route }) {
 
   if (activeData.length === 2) {
     const [book, chapter] = activeData;
-    chapterData = BOOKS[book]?.[chapter];
-    displayTitle = `${book} ${chapter}`;
+    chapterData = localeData.books[book]?.[chapter];
+    displayTitle = `${localeData.bookLabels[book] ?? book} ${chapter}`;
     showParagraphNumbers = true;
   } else if (activeData.length === 3) {
     const [author, book, chapter] = activeData;
-    chapterData = COMMENTARIES.find(c => c.id === author)?.books[book]?.[chapter];
-    displayTitle = `${author} on ${book} ${chapter}`;
+    const commentary = localeData.commentaries.find(c => c.id === author);
+    chapterData = commentary?.books[book]?.[chapter];
+    displayTitle = `${commentary?.author ?? author} ${t.on} ${localeData.bookLabels[book] ?? book} ${chapter}`;
   }
 
   React.useEffect(() => {
@@ -449,7 +611,9 @@ function ReaderScreen({ route }) {
                 style={{ color: colors.text, marginRight: 6, fontFamily: selectedFontFamily }}
                 onPress={() => setActiveWindow(win.id)}
               >
-                {win.book} {win.chapter}
+                {win.book.includes('-')
+                  ? formatReaderTitle(win.book, win.chapter, localeData, t)
+                  : `${localeData.bookLabels[win.book] ?? win.book} ${win.chapter}`}
               </Text>
               <Text
                 style={{ color: colors.text, fontWeight: 'bold', fontFamily: selectedFontFamily }}
@@ -488,7 +652,7 @@ function ReaderScreen({ route }) {
                 }}
               >
                 <Text style={{ color: colors.text + 'cc', fontSize: 14, fontFamily: selectedFontFamily }}>
-                  Search in this text...
+                  {t.readerSearchPlaceholder}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -502,7 +666,7 @@ function ReaderScreen({ route }) {
                 }}
               >
                 <TextInput
-                  placeholder="Search in this text..."
+                  placeholder={t.readerSearchPlaceholder}
                   placeholderTextColor={colors.text + '88'}
                   value={readerSearchText}
                   onChangeText={setReaderSearchText}
@@ -521,15 +685,15 @@ function ReaderScreen({ route }) {
                   <Text style={{ color: colors.text + 'cc', flex: 1, fontSize: 13, fontFamily: selectedFontFamily }}>
                     {readerSearchText.trim()
                       ? matchingLineIndices.length > 0
-                        ? `${activeMatchIndex + 1} of ${matchingLineIndices.length} matches`
-                        : 'No matches'
-                      : 'Type to search within the open text'}
+                        ? t.matches(activeMatchIndex + 1, matchingLineIndices.length)
+                        : t.noMatches
+                      : t.readerSearchEmpty}
                   </Text>
                   <TouchableOpacity onPress={() => cycleMatch(-1)} style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Prev</Text>
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>{t.prev}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => cycleMatch(1)} style={{ paddingHorizontal: 8, paddingVertical: 4 }}>
-                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Next</Text>
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>{t.next}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
@@ -538,7 +702,7 @@ function ReaderScreen({ route }) {
                     }}
                     style={{ paddingHorizontal: 8, paddingVertical: 4 }}
                   >
-                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Close</Text>
+                    <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>{t.close}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -554,7 +718,7 @@ function ReaderScreen({ route }) {
         }}>
           {!chapterData ? (
             <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', marginTop: 40, fontFamily: selectedFontFamily }}>
-              Please select a passage via Graph Screen.
+              {t.selectPassage}
             </Text>
           ) : (
             <>
@@ -592,9 +756,12 @@ function ReaderScreen({ route }) {
 
 
 function GraphScreen({ navigation }) {
-  const { colors, selectedFontKey, selectedFontFamily } = React.useContext(ThemeContext);
+  const { colors, selectedFontKey, selectedFontFamily, language, localeData, t } = React.useContext(ThemeContext);
   const [searchText, setSearchText] = React.useState('');
   const webViewRef = React.useRef(null);
+  const graphNodes = React.useMemo(() => buildGraphNodes(localeData), [localeData]);
+  const graphEdges = React.useMemo(() => buildGraphEdges(localeData), [localeData]);
+  const graphHtml = React.useMemo(() => createGraphHtml(graphNodes, graphEdges), [graphNodes, graphEdges]);
   const selectedGraphFontFace = React.useMemo(
     () => FONT_OPTIONS.find(option => option.key === selectedFontKey)?.webFontFamily ?? 'system-ui',
     [selectedFontKey]
@@ -605,22 +772,23 @@ function GraphScreen({ navigation }) {
 
     if (parts.length === 3) {
       const [author, book, chapter] = parts;
-      return `${author} on ${book} ${chapter}`;
+      const commentary = localeData.commentaries.find(c => c.id === author);
+      return `${commentary?.author ?? author} ${t.on} ${localeData.bookLabels[book] ?? book} ${chapter}`;
     }
 
     if (parts.length === 2) {
       const [book, chapter] = parts;
-      return `${book} ${chapter}`;
+      return `${localeData.bookLabels[book] ?? book} ${chapter}`;
     }
 
-    return id;
+    return localeData.bookLabels[id] ?? id;
   };
 
   const filteredNodes = React.useMemo(() => {
     if (!searchText) return [];
     const lower = searchText.toLowerCase();
-    return GRAPH_NODES.filter(n => formatNodeLabel(n.id).toLowerCase().includes(lower));
-  }, [searchText]);
+    return graphNodes.filter(n => formatNodeLabel(n.id).toLowerCase().includes(lower));
+  }, [graphNodes, localeData, searchText, t]);
 
   const applyGraphTheme = React.useCallback(() => {
     if (!webViewRef.current) return;
@@ -645,7 +813,7 @@ function GraphScreen({ navigation }) {
     setSearchText('');
     if (webViewRef.current) {
       webViewRef.current.injectJavaScript(`
-        if(window.selectNode) { window.selectNode("${nodeId}"); }
+        if(window.selectNode) { window.selectNode(${JSON.stringify(nodeId)}); }
         true;
       `);
     }
@@ -668,7 +836,7 @@ function GraphScreen({ navigation }) {
     <View style={{ flex: 1 }}>
       <View style={{ padding: 8, backgroundColor: colors.background, zIndex: 2 }}>
         <TextInput
-          placeholder="Search a node..."
+          placeholder={t.graphSearchPlaceholder}
           placeholderTextColor={colors.text + '88'}
           value={searchText}
           onChangeText={setSearchText}
@@ -711,9 +879,10 @@ function GraphScreen({ navigation }) {
       </View>
 
       <WebView
+        key={language}
         ref={webViewRef}
         originWhitelist={['*']}
-        source={{ html: GRAPH_HTML }}
+        source={{ html: graphHtml }}
         style={{ flex: 1 }}
         onLoadEnd={applyGraphTheme}
         onMessage={handleMessage}
@@ -726,13 +895,25 @@ function GraphScreen({ navigation }) {
 
 
 function SettingsScreen() {
-  const { darkMode, toggleDarkMode, colors, selectedFontKey, setSelectedFontKey, selectedFontFamily } = React.useContext(ThemeContext);
+  const {
+    darkMode,
+    toggleDarkMode,
+    colors,
+    selectedFontKey,
+    setSelectedFontKey,
+    selectedFontFamily,
+    language,
+    setLanguage,
+    t,
+  } = React.useContext(ThemeContext);
   const insets = useSafeAreaInsets();
   const { width } = Dimensions.get('window');
   const [fontMenuOpen, setFontMenuOpen] = React.useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = React.useState(false);
   const [qaOpen, setQaOpen] = React.useState(false);
   const qaSlide = React.useRef(new Animated.Value(0)).current;
   const selectedFontLabel = FONT_OPTIONS.find(option => option.key === selectedFontKey)?.label ?? 'Standard';
+  const selectedLanguageLabel = LANGUAGE_OPTIONS.find(option => option.key === language)?.label ?? 'English';
   const qaPanelWidth = Math.min(width * 0.88, 430);
 
   React.useEffect(() => {
@@ -753,7 +934,7 @@ function SettingsScreen() {
         borderBottomWidth: 1,
         borderBottomColor: colors.text + '33'
       }}>
-        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Dark Mode</Text>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>{t.darkMode}</Text>
         <Switch
           value={darkMode}
           onValueChange={toggleDarkMode}
@@ -770,7 +951,7 @@ function SettingsScreen() {
         borderBottomWidth: 1,
         borderBottomColor: colors.text + '33'
       }}>
-        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Font</Text>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>{t.font}</Text>
         <View style={{ alignItems: 'flex-end' }}>
           <TouchableOpacity
             onPress={() => setFontMenuOpen(prev => !prev)}
@@ -830,7 +1011,67 @@ function SettingsScreen() {
         borderBottomWidth: 1,
         borderBottomColor: colors.text + '33'
       }}>
-        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>Q&A</Text>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>{t.language}</Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <TouchableOpacity
+            onPress={() => setLanguageMenuOpen(prev => !prev)}
+            style={{
+              minWidth: 170,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: colors.text + '44',
+              backgroundColor: colors.text + '11',
+            }}
+          >
+            <Text style={{ color: colors.text, fontSize: 16, fontFamily: selectedFontFamily, textAlign: 'right' }}>
+              {selectedLanguageLabel} v
+            </Text>
+          </TouchableOpacity>
+
+          {languageMenuOpen && (
+            <View style={{
+              marginTop: 8,
+              width: 170,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: colors.text + '33',
+              backgroundColor: colors.background,
+              overflow: 'hidden',
+            }}>
+              {LANGUAGE_OPTIONS.map(option => (
+                <TouchableOpacity
+                  key={option.key}
+                  onPress={() => {
+                    setLanguage(option.key);
+                    setLanguageMenuOpen(false);
+                  }}
+                  style={{
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    backgroundColor: option.key === language ? colors.text + '11' : 'transparent',
+                  }}
+                >
+                  <Text style={{ color: colors.text, fontSize: 16, fontFamily: selectedFontFamily }}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      </View>
+
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 14,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.text + '33'
+      }}>
+        <Text style={{ fontSize: 18, color: colors.text, fontFamily: selectedFontFamily }}>{t.qAndA}</Text>
         <TouchableOpacity
           onPress={() => setQaOpen(true)}
           style={{
@@ -843,7 +1084,7 @@ function SettingsScreen() {
           }}
         >
           <Text style={{ color: colors.text, fontSize: 16, fontFamily: selectedFontFamily }}>
-            Open Q&A
+            {t.openQAndA}
           </Text>
         </TouchableOpacity>
       </View>
@@ -893,7 +1134,7 @@ function SettingsScreen() {
           borderBottomColor: colors.text + '22',
           marginBottom: 12,
         }}>
-          <Text style={{ color: colors.text, fontSize: 22, fontFamily: selectedFontFamily }}>Q&A</Text>
+          <Text style={{ color: colors.text, fontSize: 22, fontFamily: selectedFontFamily }}>{t.qAndA}</Text>
           <TouchableOpacity
             onPress={() => setQaOpen(false)}
             style={{
@@ -903,12 +1144,12 @@ function SettingsScreen() {
               backgroundColor: colors.text + '11',
             }}
           >
-            <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>Close</Text>
+            <Text style={{ color: colors.text, fontSize: 14, fontFamily: selectedFontFamily }}>{t.close}</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-          {INTRO_QA.map((item) => (
+          {t.qa.map((item) => (
             <View
               key={item.id}
               style={{
@@ -921,10 +1162,10 @@ function SettingsScreen() {
               }}
             >
               <Text style={{ color: colors.text, fontSize: 17, marginBottom: 8, fontFamily: selectedFontFamily, fontWeight: '700' }}>
-                Question: {item.question}
+                {t.question}: {item.question}
               </Text>
               <Text style={{ color: colors.text, fontSize: 16, lineHeight: 24, fontFamily: selectedFontFamily }}>
-                Answer: {item.answer}
+                {t.answer}: {item.answer}
               </Text>
             </View>
           ))}
@@ -1530,13 +1771,14 @@ function SplashScreen({ onFinish }) {
 
 function TabButton({ label, background, focused, colors }) {
   const { selectedFontFamily } = React.useContext(ThemeContext);
+  const buttonWidth = Math.max(70, Math.min(112, label.length * 9 + 20));
 
   return (
     <ImageBackground
       source={background}
       resizeMode="cover"
       style={{
-        width: 70,
+        width: buttonWidth,
         height: 34,
         borderRadius: 8,
         overflow: 'hidden',
@@ -1574,7 +1816,7 @@ function TabButton({ label, background, focused, colors }) {
 
 function AppTabs() {
   const insets = useSafeAreaInsets();
-  const { darkMode, colors } = React.useContext(ThemeContext);
+  const { darkMode, colors, t } = React.useContext(ThemeContext);
 
   return (
     <Tab.Navigator
@@ -1597,7 +1839,7 @@ function AppTabs() {
     tabBarLabel: () => null,
     tabBarIcon: ({ focused }) => (
       <TabButton
-        label="Reader"
+        label={t.tabs.Reader}
         background={readerBg}
         focused={focused}
         colors={colors}
@@ -1613,7 +1855,7 @@ function AppTabs() {
     tabBarLabel: () => null,
     tabBarIcon: ({ focused }) => (
       <TabButton
-        label="Graph"
+        label={t.tabs.Graph}
         background={graphBg}
         focused={focused}
         colors={colors}
@@ -1629,7 +1871,7 @@ function AppTabs() {
     tabBarLabel: () => null,
     tabBarIcon: ({ focused }) => (
       <TabButton
-        label="Settings"
+        label={t.tabs.Settings}
         background={settingsBg}
         focused={focused}
         colors={colors}
@@ -1648,6 +1890,7 @@ export default function App() {
   const [darkMode, setDarkMode] = React.useState(false);
   const [showSplash, setShowSplash] = React.useState(true);
   const [selectedFontKey, setSelectedFontKey] = React.useState('Standard');
+  const [language, setLanguage] = React.useState('en');
   const [fontsLoaded] = useFonts({
     Cardo: CardoFont,
     EBGaramond: EBGaramondFont,
@@ -1682,6 +1925,10 @@ export default function App() {
     selectedFontKey,
     setSelectedFontKey,
     selectedFontFamily,
+    language,
+    setLanguage,
+    t: TRANSLATIONS[language],
+    localeData: LOCALE_DATA[language],
     colors: darkMode
       ? {
         background: '#03032E',
@@ -1693,7 +1940,7 @@ export default function App() {
         text: '#2B1D0E',
         graphText: '#2B1D0E',
       },
-  }), [darkMode, toggleDarkMode, selectedFontKey, selectedFontFamily]);
+  }), [darkMode, toggleDarkMode, selectedFontKey, selectedFontFamily, language]);
 
   const [currentTitle, setCurrentTitle] = React.useState('Reader');
 
@@ -1714,7 +1961,7 @@ export default function App() {
         <ThemeContext.Provider value={theme}>
           <NavigationContainer ref={navigationRef}>
             <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-              <CustomHeader title={currentTitle} colors={theme.colors} />
+              <CustomHeader title={theme.t.tabs[currentTitle] ?? currentTitle} colors={theme.colors} />
               <AppTabs />
             </View>
           </NavigationContainer>
